@@ -26,6 +26,14 @@
 *.a
 *.lib
 
+# Debug files 
+*.pdb
+*.log 
+*.cmake 
+*.manifest
+
+.vs 
+out
 # Executables
 *.exe
 *.out
