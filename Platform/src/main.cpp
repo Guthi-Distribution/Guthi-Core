@@ -1,8 +1,8 @@
-#include <format>
+// #include <format>
 #include <iostream>
+#include <stdio.h>
 
 int main(int argc, char *argv[])
 {
-    std::cout << std::format("{}","Hello Universe") << std::endl;
-    return 0;
+    printf("Hello there\n");
 }
