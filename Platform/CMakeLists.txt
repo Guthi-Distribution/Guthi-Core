@@ -6,7 +6,7 @@ set (INCLUDE "./include")
 include_directories(${INCLUDE})
 
 if(WIN32)	
-	add_executable(guthi_exec ${SRC}/main.cpp)
+	add_executable(guthi_exec ${SRC}/main.cpp ${SRC}/filesystem/fs.cpp ${SRC}/filesystem/cache.cpp)
 	target_link_libraries(guthi_exec gdi32 kernel32 user32)
 	target_compile_features(guthi_exec PUBLIC cxx_std_20)
 	if(MSVC)
