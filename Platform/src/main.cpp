@@ -4,7 +4,7 @@
 #include <cstdio>
 #include <iostream>
 
-#include "./filesystem/fs.hpp"
+#include "filesystem/fs.hpp"
 
 // Lets get started with file sharing then
 

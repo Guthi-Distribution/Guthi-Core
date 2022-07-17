@@ -10,7 +10,7 @@ namespace FileSystem
 {
 static FileCache g_file_cache = FileCache("./tmp/");
 
-bool             FileCache::IsFileCached(std::string const &file) const
+bool FileCache::IsFileCached(std::string const &file) const
 {
     return cached_files.find(file) != cached_files.end();
 }
@@ -27,6 +27,8 @@ bool FileCache::RemoveFromCache(std::string const& file_name)
 {
     if (cached_files.contains(file_name))
         cached_files.erase(file_name);
+
+	return false;
 }
 
 FileCache &FileCache::GetLocalFileCache()

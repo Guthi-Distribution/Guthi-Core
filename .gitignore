@@ -45,3 +45,14 @@ CMakeCache.txt
 cmake_install.cmake
 CMakeFiles/
 file_sharing
+
+
+Debug/
+guthi_exec.dir/
+guthi_exec.vcxproj
+guthi_exec.vcxproj.filters
+*.vcxproj
+*.filters
+Guthi.sln
+x64/
+.vscode/
