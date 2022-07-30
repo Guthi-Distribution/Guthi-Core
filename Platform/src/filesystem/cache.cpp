@@ -27,6 +27,7 @@ bool FileCache::RemoveFromCache(std::string const& file_name)
 {
     if (cached_files.contains(file_name))
         cached_files.erase(file_name);
+    return true; 
 }
 
 FileCache &FileCache::GetLocalFileCache()

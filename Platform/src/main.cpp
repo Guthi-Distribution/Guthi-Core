@@ -15,5 +15,17 @@ int main(int argc, char *argv[])
     // File cache
     auto &cache = FileSystem::FileCache::GetLocalFileCache();
 
+    auto  file  = FileSystem::OSFile::OpenFile("../../../../Platform/src/test.txt", FileSystem::FileMode::In);
+    FileSystem::FileBufReader reader(&file);
+
+    //char                      buffer[512] = {};
+    //reader.Read(buffer, 10); 
+    //std::cout << buffer << std::endl; 
+
+    int   a;
+    float f; 
+    char  str[32] = {}; 
+    reader.Scanf("%d %f %s", &a, &f,str); 
+    std::cout << "a -> " << a << " and f -> " << f << " and str -> " << str << std::endl; 
     return 0;
 }
