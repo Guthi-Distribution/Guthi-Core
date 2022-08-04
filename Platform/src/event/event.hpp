@@ -1,19 +1,27 @@
 #pragma once
 #include <sys/inotify.h>
 
+namespace Event
+{
+enum EventType {
+    NONE = 0,
+    CHANGED,
+    DELETED,
+};
+
+/*
+TODO:
+    - Event Type Implementation
+    - Event Category?
+    - Event Listener
+    - Buffered Event(Queue)
+    - Debug Data
+    - Event Dispatch
+    - Inheritance as a base event?
+*/
 
 struct Event {
-    int inotify_fd;
-
-
     Event() {
-        inotify_fd = inotify_init();    
-
-        //TODO: handle error for init
-    }
-
-
-    void remove_event() {
-        inotify_rm_watch(inotify_fd, 0);
     }
 };
+} // namespace Event

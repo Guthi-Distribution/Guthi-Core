@@ -1,3 +1,3 @@
-namespace Event {
-    
+namespace Event
+{
 }

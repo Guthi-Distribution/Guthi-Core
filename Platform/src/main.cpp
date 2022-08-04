@@ -15,8 +15,5 @@ int main(int argc, char *argv[]) {
     // File cache
     auto &cache = FileSystem::FileCache::GetLocalFileCache();
 
-    Event event;
-    printf("%d\n", event.inotify_fd);
-
     return 0;
 }

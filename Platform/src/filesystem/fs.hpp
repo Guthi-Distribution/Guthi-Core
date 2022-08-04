@@ -34,24 +34,20 @@ enum class FileStatus
 struct OSFile;
 struct RawFile;
 
-template <typename T> struct FileBufWriter
-{
+template <typename T> struct FileBufWriter {
     T *underlying_file;
 
-    FileBufWriter(T *file) : underlying_file{file}
-    {
+    FileBufWriter(T *file) : underlying_file{file} {
     }
 
     bool flush(); // submit accumulated write to the original file
     void printf();
 };
 
-template <typename T> struct FileBufReader
-{
+template <typename T> struct FileBufReader {
     T *underlying_file;
 
-    FileBufReader(T *file) : underlying_file{file}
-    {
+    FileBufReader(T *file) : underlying_file{file} {
     }
 
     void read();
@@ -60,16 +56,13 @@ template <typename T> struct FileBufReader
     void scanf();
 };
 
-template <typename T> struct GenericFile
-{
-};
+template <typename T> struct GenericFile {};
 
 // So I guess, this idea of file should be made a little broader and inherit from base file type
 // It won't be OOP way of inheritance, but of templated way.
 
 // This struct would be re-named to OSFile
-struct OSFile
-{
+struct OSFile {
     FILE                           *file_ptr  = nullptr;
     size_t                          file_size = 0; // size of file in bytes
     std::string                     file_name;
@@ -88,26 +81,24 @@ struct OSFile
     std::filesystem::file_time_type QueryLastWriteTime() const;
 };
 
-struct RawFile
-{
+struct RawFile {
     size_t      file_size = 0;
     std::string file_name;
     // type -> sock_stream, udp_stream or raw file, could be adjusted for them later on
-    size_t   pos             = 0;
-    size_t   len             = 0;
-    size_t   buffer_capacity = 0;
-    uint8_t *data            = nullptr;
+    size_t                 pos             = 0;
+    size_t                 len             = 0;
+    size_t                 buffer_capacity = 0;
+    uint8_t               *data            = nullptr;
 
-    OSFile   ConvertToOSFile() const;
+    OSFile                 ConvertToOSFile() const;
 
-    FileBufReader<RawFile> ReadBuffered(); 
-    FileBufWriter<RawFile> WriteBuffered(); 
+    FileBufReader<RawFile> ReadBuffered();
+    FileBufWriter<RawFile> WriteBuffered();
 };
 
 void FetchFile(const std::string &file);
 
-struct FileCache
-{
+struct FileCache {
     std::string local_cache_directory;
 
     // maybe a multimap needed here
@@ -118,8 +109,7 @@ struct FileCache
     //  used "./birds/parrot.png"
     std::unordered_set<std::string> cached_files;
 
-    FileCache(const std::string &cache_directory) : local_cache_directory{cache_directory}
-    {
+    FileCache(const std::string &cache_directory) : local_cache_directory{cache_directory} {
     }
 
     // File name is sufficient for these functions to work
