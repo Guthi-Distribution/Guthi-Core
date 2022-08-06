@@ -38,12 +38,12 @@ fs::file_time_type OSFile::QueryLastWriteTime() const
 
 uint32_t OSFile::FetchBlockWithSize(uint8_t *data, uint32_t size)
 {
-    return (uint32_t)std::fread(data, 1, size, file_ptr); 
+    return (uint32_t)std::fread(data, sizeof(*data), size, file_ptr);
 }
 
 uint32_t OSFile::WriteBlockWithSize(uint8_t* data, uint32_t size)
 {
-    return (uint32_t)std::fwrite(data, 1, size, file_ptr); 
+    return (uint32_t)std::fwrite(data, sizeof(*data), size, file_ptr);
 }
 
 void FetchFile(const std::string &file)

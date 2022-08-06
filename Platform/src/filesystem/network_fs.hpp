@@ -61,12 +61,12 @@ void FileFormatter(std::ostream &os, const FileContent &file, const uint32_t dep
 
     os << '|';
     for (int32_t j = 0; j < sub_folder_spacing; ++j)
-        os << '_'; 
+        os << '_';
 
     if (file.type == FileType::File)
     {
         os << "File [" << file.name << ']' << '\n';
-        return; 
+        return;
     }
     else
         os << "Folder [" << file.name << ']' << '\n';
@@ -78,37 +78,80 @@ void FileFormatter(std::ostream &os, const FileContent &file, const uint32_t dep
 std::ostream &operator<<(std::ostream &os, const FileContent &file)
 {
     FileFormatter(os, file, 1);
-    return os; 
+    return os;
 }
 
 // AddFile/Directory to the current content
-bool AddFile(FileContent &file_dir, FileContent* file)
+bool AddFile(FileContent &file_dir, FileContent *file)
 {
     file_dir.contents.push_back(file);
-    return true; 
+    return true;
 }
 
 // Remove file from the current directory
-bool RemoveFile(FileContent &file_dir, FileContent* file)
+bool RemoveFile(FileContent &file_dir, FileContent *file)
 {
     //// Shall just name be compared to mark for deletion instead of while directory recursively?
     //// auto iter = std::find(file_dir.contents.begin(), file_dir.contents.end(), file);
     auto iter = std::find_if(file_dir.contents.begin(), file_dir.contents.end(),
-                          [&](const auto &f1) { return f1->name == file.name; });
+                             [&](const auto &f1) { return f1->name == file->name; });
     if (iter == file_dir.contents.end())
         return false;
     file_dir.contents.erase(iter);
-    return true; 
+    return true;
 }
 
-// The most important function on the whole network file system 
-FileContent* MergeFileContent(std::vector<FileContent*> files)
+// file1 and file2 are mergeable files with same level and same directory label
+// file1 is modified to incorporate changes from file2
+
+void MergeSingleFileContent(FileContent *file1, FileContent *file2)
+{
+    for (auto const &x : file2->contents)
+    {
+        auto iter = std::find_if(file1->contents.begin(), file1->contents.end(),
+                                 [&](const auto &f1) { return f1->name == x->name; });
+
+        if (iter == file1->contents.end() || x->type == FileType::File)
+        {
+            // TODO :: Implement collision resolution here
+            // currently just add with multiple same names
+
+            file1->contents.push_back(x);
+        }
+        else
+        {
+            MergeSingleFileContent(*iter, x);
+        }
+    }
+}
+
+// The most important function on the whole network file system
+FileContent *MergeTotalFileContent(std::vector<FileContent *> const &files)
 {
     // Start at the top hirarchy and move downward, at each step merging file at the same hierarchy
-    // If the folders aren't same at that level, create seperate directory  
+    // If the folders aren't same at that level, create seperate directory
+    auto dfs        = new FileContent();
+    dfs->name       = "Guthi File System"; // Top root level directory content
+    dfs->type       = FileSystem::FileType::Directory;
 
+    auto files_copy = files;
 
-    return nullptr; 
+    // Run down over all the file hierarchy simultaneously
+    for (auto const &dir : files)
+    {
+        auto iter = std::find_if(dfs->contents.begin(), dfs->contents.end(),
+                                 [&](const auto &f1) { return f1->name == dir->name; });
+
+        if (iter == dfs->contents.end())
+        {
+            dfs->contents.push_back(dir);
+        }
+        else
+        {
+            MergeSingleFileContent(*iter, dir);
+        }
+    }
+    return dfs;
 }
 
 struct NetworkFS

@@ -7,6 +7,7 @@
 #include <concepts>
 #include <cstdarg>
 #include <cstdio>
+#include <cstring>
 #include <filesystem>
 #include <unordered_set>
 
@@ -63,6 +64,7 @@ template <typename T> struct FileBufWriter
     {
         underlying_file->WriteBlockWithSize(buffer.data, buffer.pos); 
         buffer.pos = 0; 
+        return true; 
     }
 
     void Printf(const char *fmt, ...)
@@ -275,7 +277,7 @@ struct OSFile
     std::filesystem::file_time_type QueryLastWriteTime() const;
     ~OSFile()
     {
-        this->CloseFile(*this); 
+        
     }
 };
 
