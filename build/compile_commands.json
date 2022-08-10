@@ -1,0 +1,22 @@
+[
+{
+  "directory": "/run/media/imsanskar/My_files/Projects/Guthi/build/Platform",
+  "command": "/usr/bin/c++  -I/run/media/imsanskar/My_files/Projects/Guthi/Platform/./include -fsanitize=address -g -std=gnu++20 -o CMakeFiles/file_sharing.dir/src/main.cpp.o -c /run/media/imsanskar/My_files/Projects/Guthi/Platform/src/main.cpp",
+  "file": "/run/media/imsanskar/My_files/Projects/Guthi/Platform/src/main.cpp"
+},
+{
+  "directory": "/run/media/imsanskar/My_files/Projects/Guthi/build/Platform",
+  "command": "/usr/bin/c++  -I/run/media/imsanskar/My_files/Projects/Guthi/Platform/./include -fsanitize=address -g -std=gnu++20 -o CMakeFiles/file_sharing.dir/src/filesystem/cache.cpp.o -c /run/media/imsanskar/My_files/Projects/Guthi/Platform/src/filesystem/cache.cpp",
+  "file": "/run/media/imsanskar/My_files/Projects/Guthi/Platform/src/filesystem/cache.cpp"
+},
+{
+  "directory": "/run/media/imsanskar/My_files/Projects/Guthi/build/Platform",
+  "command": "/usr/bin/c++  -I/run/media/imsanskar/My_files/Projects/Guthi/Platform/./include -fsanitize=address -g -std=gnu++20 -o CMakeFiles/file_sharing.dir/src/filesystem/fs.cpp.o -c /run/media/imsanskar/My_files/Projects/Guthi/Platform/src/filesystem/fs.cpp",
+  "file": "/run/media/imsanskar/My_files/Projects/Guthi/Platform/src/filesystem/fs.cpp"
+},
+{
+  "directory": "/run/media/imsanskar/My_files/Projects/Guthi/build/Platform",
+  "command": "/usr/bin/c++  -I/run/media/imsanskar/My_files/Projects/Guthi/Platform/./include -fsanitize=address -g -std=gnu++20 -o CMakeFiles/file_sharing.dir/src/event/event.cpp.o -c /run/media/imsanskar/My_files/Projects/Guthi/Platform/src/event/event.cpp",
+  "file": "/run/media/imsanskar/My_files/Projects/Guthi/Platform/src/event/event.cpp"
+}
+]
