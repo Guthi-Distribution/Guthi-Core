@@ -1,0 +1,3 @@
+[submodule "Guthi-Network"]
+	path = Guthi-Network
+	url = git@github.com:Guthi-Distribution/Guthi-Network.git
