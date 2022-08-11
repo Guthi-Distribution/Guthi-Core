@@ -3,8 +3,9 @@
 namespace Guthi
 {
 
-void EventQueue::push_event(Event *e) {
+void EventQueue::push_event(Event *e, Handler handler) {
     EventQueueEntry *entry = new EventQueueEntry(e);
+    entry->handler.bind_handler(handler);
     if (!head && !tail) {
         head = entry;
         tail = entry;

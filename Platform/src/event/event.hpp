@@ -6,6 +6,7 @@
 
 namespace Guthi
 {
+
 enum EventType {
     NONE = 0,
     CHANGED,
@@ -13,9 +14,11 @@ enum EventType {
 };
 
 enum EventStatus {
-    ERROR,
+    ERROR = 0,
     COMPLETED
 };
+
+typedef std::function<EventStatus(void *)> Handler;
 
 /*
 TODO:
@@ -65,9 +68,13 @@ struct EventHandler {
     EventHandler(Event *_event) : event(_event) {
     }
 
-    template <class T> bool handle_event(std::function<EventStatus()> handler) {
+    void bind_handler(Handler _handler) {
+        handler = _handler;
+    }
+
+    template <class T> bool handle_event(void *param) {
         if (event->type == T::GetStaticType) {
-            event->handle_status = handler();
+            event->handle_status = handler(param);
 
             return true;
         }
@@ -76,7 +83,8 @@ struct EventHandler {
     }
 
   private:
-    Event *event;
+    Event  *event;
+    Handler handler;
 };
 
 struct EventQueueEntry {
@@ -90,8 +98,11 @@ struct EventQueueEntry {
     }
 };
 
+/*
+    Stores all the unhandled events
+*/
 struct EventQueue {
-    void         push_event(Event *e);
+    void         push_event(Event *e, Handler handler);
 
     EventHandler pop_event();
 
