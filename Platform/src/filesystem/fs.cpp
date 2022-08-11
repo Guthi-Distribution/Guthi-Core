@@ -14,7 +14,10 @@ OSFile OSFile::OpenFile(const std::string &file, FileMode mode)
     os_file.file_status                        = FileStatus::Opened;
 
     if (!(os_file.file_ptr = fopen(file.c_str(), file_modes[static_cast<size_t>(mode)])))
+    {
+        fprintf(stdout, "Failed to open the file %s.", file.c_str()); 
         return os_file;  // Its error but not handled :D
+    }
 
     fseek(os_file.file_ptr, 0, SEEK_END);
     os_file.file_size = ftell(os_file.file_ptr);
@@ -31,6 +34,16 @@ void OSFile::CloseFile(OSFile& file)
 fs::file_time_type OSFile::QueryLastWriteTime() const
 {
     return fs::last_write_time(file_name);
+}
+
+uint32_t OSFile::FetchBlockWithSize(uint8_t *data, uint32_t size)
+{
+    return (uint32_t)std::fread(data, sizeof(*data), size, file_ptr);
+}
+
+uint32_t OSFile::WriteBlockWithSize(uint8_t* data, uint32_t size)
+{
+    return (uint32_t)std::fwrite(data, sizeof(*data), size, file_ptr);
 }
 
 void FetchFile(const std::string &file)

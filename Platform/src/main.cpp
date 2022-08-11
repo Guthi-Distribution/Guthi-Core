@@ -4,8 +4,8 @@
 #include <cstdio>
 #include <iostream>
 
+#include "./filesystem/fs.hpp"
 #include "event/event.hpp"
-#include "filesystem/fs.hpp"
 
 // Lets get started with file sharing then
 
@@ -19,5 +19,14 @@ int main(int argc, char *argv[]) {
     // File cache
     auto &cache = FileSystem::FileCache::GetLocalFileCache();
 
-    return 0;
+    auto  file  = FileSystem::OSFile::OpenFile("../../../../Platform/src/test.txt", FileSystem::FileMode::In);
+    FileSystem::FileBufReader reader(&file);
+
+    int                       a;
+    float                     f;
+    char                      str[32] = {};
+    reader.Scanf("%d %f %s", &a, &f, str);
+    std::cout << "a -> " << a << " and f -> " << f << " and str -> " << str << std::endl;
+
+    // TODO :: Implement unit testing framework for automated testing approach
 }
