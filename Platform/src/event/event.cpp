@@ -14,8 +14,6 @@ void EventQueue::push_event(Event *e, Handler handler) {
 
     tail->next  = entry;
     entry->next = nullptr;
-
-    nullptr;
 }
 
 EventHandler EventQueue::pop_event() {

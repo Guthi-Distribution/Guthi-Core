@@ -33,8 +33,6 @@ TODO:
 */
 
 struct Event {
-    // TODO: is an event identifier needed?
-    //  maybe not because we are using objects
     EventType type;
     bool      handle_status;
     int       mask; // a number to mask the event to not occur

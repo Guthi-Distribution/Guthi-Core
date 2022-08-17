@@ -5,7 +5,7 @@
 #include <iostream>
 
 #include "./filesystem/fs.hpp"
-#include "event/event.hpp"
+#include "./event/event.hpp"
 
 // Lets get started with file sharing then
 
