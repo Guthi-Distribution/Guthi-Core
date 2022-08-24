@@ -56,3 +56,8 @@ guthi_exec.vcxproj.filters
 Guthi.sln
 x64/
 .vscode/
+.cache/
+log.txt
+build/
+Platform/
+.clang-format

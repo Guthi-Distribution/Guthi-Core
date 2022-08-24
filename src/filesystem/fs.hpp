@@ -15,8 +15,7 @@
 
 namespace FileSystem
 {
-enum class FileMode
-{
+enum class FileMode {
     In     = 0,
     Out    = 1,
     InOut  = 2,
@@ -24,8 +23,7 @@ enum class FileMode
     None
 };
 
-enum class FileStatus
-{
+enum class FileStatus {
     Opened,
     Modified,
     OutOfSync,
@@ -35,8 +33,7 @@ enum class FileStatus
 // Specifies whether the file is in the form of raw data (as obtained from network) or behind the OS
 // To handle things either way, requires some nice API
 
-struct Buffer
-{
+struct Buffer {
     constexpr static int DEFAULT_BUFFER_SIZE = 4096; // 512 bytes
     uint8_t             *data                = nullptr;
     uint32_t             pos;
@@ -45,14 +42,12 @@ struct Buffer
 };
 
 // TODO :: Implement reallocations
-template <typename T> struct FileBufWriter
-{
+template <typename T> struct FileBufWriter {
     T     *underlying_file;
 
     Buffer buffer = {};
 
-    FileBufWriter(T *file) : underlying_file{file}
-    {
+    FileBufWriter(T *file) : underlying_file{file} {
         // initialize the capacity of the buffer
 
         buffer.data     = malloc(sizeof(*buffer.data) * decltype(buffer)::DEFAULT_BUFFER_SIZE);
@@ -62,13 +57,12 @@ template <typename T> struct FileBufWriter
 
     bool Flush() // submit accumulated write back to the original file
     {
-        underlying_file->WriteBlockWithSize(buffer.data, buffer.pos); 
-        buffer.pos = 0; 
-        return true; 
+        underlying_file->WriteBlockWithSize(buffer.data, buffer.pos);
+        buffer.pos = 0;
+        return true;
     }
 
-    void Printf(const char *fmt, ...)
-    {
+    void Printf(const char *fmt, ...) {
         va_list args;
         va_start(args, fmt);
 
@@ -86,32 +80,27 @@ template <typename T> struct FileBufWriter
         va_end(args);
     }
 
-    void Write(const void *buffer_, size_t size)
-    {
+    void Write(const void *buffer_, size_t size) {
         assert(size < (buffer.capacity - buffer.pos));
         std::memcpy(buffer.data + buffer.pos, buffer_, size);
     }
 
-    ~FileBufWriter()
-    {
-        free(buffer.data); 
+    ~FileBufWriter() {
+        free(buffer.data);
     }
 };
 
 // Let's complete the buffered reader first
 template <typename T>
-requires requires(T &x)
-{
+requires requires(T &x) {
     x.FetchBlockWithSize(nullptr, 0);
 }
-struct FileBufReader
-{
+struct FileBufReader {
     T     *underlying_file;
 
     Buffer buffer = {};
 
-    FileBufReader(T *file) : underlying_file{file}
-    {
+    FileBufReader(T *file) : underlying_file{file} {
         buffer.data     = (uint8_t *)malloc(sizeof(*buffer.data) * Buffer::DEFAULT_BUFFER_SIZE);
         buffer.pos      = 0;
         buffer.capacity = decltype(buffer)::DEFAULT_BUFFER_SIZE;
@@ -119,11 +108,9 @@ struct FileBufReader
         buffer.pos      = underlying_file->FetchBlockWithSize(buffer.data, Buffer::DEFAULT_BUFFER_SIZE);
     }
 
-    uint32_t Read(char *buffer_, size_t size)
-    {
+    uint32_t Read(char *buffer_, size_t size) {
         assert(size < decltype(buffer)::DEFAULT_BUFFER_SIZE);
-        if (size >= (buffer.pos - buffer.read_ptr))
-        {
+        if (size >= (buffer.pos - buffer.read_ptr)) {
             if (buffer.pos != buffer.capacity)
                 return 0;
             // else there's more data to fetch
@@ -144,25 +131,21 @@ struct FileBufReader
 
     void Skip(uint32_t no_of_bytes) // Skip n characters in the forward direction
     {
-        if (buffer.read_ptr + no_of_bytes < buffer.pos)
-        {
+        if (buffer.read_ptr + no_of_bytes < buffer.pos) {
             buffer.read_ptr = buffer.read_ptr + no_of_bytes;
         }
     }
 
-    void Unread(uint32_t no_of_bytes)
-    {
+    void Unread(uint32_t no_of_bytes) {
         if (buffer.read_ptr < no_of_bytes)
             buffer.read_ptr = 0;
         else
             buffer.read_ptr = buffer.read_ptr - no_of_bytes;
     }
 
-    void Scanf(const char *fmt, ...)
-    {
+    void Scanf(const char *fmt, ...) {
         // TODO :: Replace with safer version
-        if constexpr (false)
-        {
+        if constexpr (false) {
             va_list arg;
             va_start(arg, fmt);
 
@@ -170,9 +153,7 @@ struct FileBufReader
             vsscanf((const char *const)(buffer.data + buffer.read_ptr), fmt, arg);
             // TODO :: increment the read pointer
             va_end(arg);
-        }
-        else
-        {
+        } else {
             uint32_t pos     = 0;
             uint32_t fmt_len = strlen(fmt);
             // Custom scanf implementation
@@ -184,19 +165,15 @@ struct FileBufReader
 
             uint32_t in_pos     = 0;
 
-            // TODO :: Implement it properly 
-            while (pos < fmt_len - 1)
-            {
+            // TODO :: Implement it properly
+            while (pos < fmt_len - 1) {
                 // skip whitespace
                 while (fmt[pos] == ' ' || fmt[pos] == '\t' || fmt[pos] == '\n')
                     pos = pos + 1;
 
-                if (fmt[pos] == '%')
-                {
-                    switch (fmt[pos + 1])
-                    {
-                    case 'd':
-                    {
+                if (fmt[pos] == '%') {
+                    switch (fmt[pos + 1]) {
+                    case 'd': {
                         // prepare to read integer from the input stream
                         char    *end_ptr = NULL;
                         uint32_t val     = strtol((const char *)(buffer.read_ptr + buffer.data + in_pos), &end_ptr, 0);
@@ -210,56 +187,49 @@ struct FileBufReader
                         *var          = val;
                         break;
                     }
-                    case 'f':
-                    {
+                    case 'f': {
                         // read floating point literal from the input
-                        char    *end_ptr = NULL;
+                        char *end_ptr = NULL;
                         float val     = strtof((const char *)(buffer.read_ptr + buffer.data + in_pos), &end_ptr);
 
                         if ((uint8_t *)end_ptr == (buffer.read_ptr + buffer.data + in_pos))
                             assert(!"Error reading the integer literal ");
 
-                        in_pos        = in_pos + (uint8_t *)end_ptr - (buffer.read_ptr + buffer.data + in_pos);
+                        in_pos     = in_pos + (uint8_t *)end_ptr - (buffer.read_ptr + buffer.data + in_pos);
 
                         float *var = va_arg(arg, float *);
-                        *var          = val;
+                        *var       = val;
                         break;
                     }
-                    case 'c':
-                    {
+                    case 'c': {
                         // consume single character
                     }
-                    case 's':
-                    {
+                    case 's': {
                         char *ptr = va_arg(arg, char *);
-                        sscanf((const char* const)buffer.data + buffer.read_ptr + in_pos, "%s", ptr);
-                        break; 
+                        sscanf((const char *const)buffer.data + buffer.read_ptr + in_pos, "%s", ptr);
+                        break;
                     }
                     }
                     pos = pos + 2;
                 }
             }
             buffer.read_ptr += in_pos;
-            va_end(arg); 
+            va_end(arg);
         }
     }
 
-    ~FileBufReader()
-    {
+    ~FileBufReader() {
         free(buffer.data);
     }
 };
 
-template <typename T> struct GenericFile
-{
-};
+template <typename T> struct GenericFile {};
 
 // So I guess, this idea of file should be made a little broader and inherit from base file type
 // It won't be OOP way of inheritance, but of templated way.
 
 // This struct would be re-named to OSFile
-struct OSFile
-{
+struct OSFile {
     FILE                           *file_ptr  = nullptr;
     size_t                          file_size = 0; // size of file in bytes
     std::string                     file_name;
@@ -272,17 +242,14 @@ struct OSFile
     static OSFile                   OpenFile(const std::string &file, FileMode mode);
     static void                     CloseFile(OSFile &file);
     uint32_t                        FetchBlockWithSize(uint8_t *data, uint32_t size);
-    uint32_t                        WriteBlockWithSize(uint8_t *data, uint32_t size); 
+    uint32_t                        WriteBlockWithSize(uint8_t *data, uint32_t size);
 
     std::filesystem::file_time_type QueryLastWriteTime() const;
-    ~OSFile()
-    {
-        
+    ~OSFile() {
     }
 };
 
-struct RawFile
-{
+struct RawFile {
     size_t      file_size = 0;
     std::string file_name;
 
@@ -300,8 +267,7 @@ struct RawFile
 
 void FetchFile(const std::string &file);
 
-struct FileCache
-{
+struct FileCache {
     std::string local_cache_directory;
 
     // maybe a multimap needed here
@@ -312,8 +278,7 @@ struct FileCache
     //  used "./birds/parrot.png"
     std::unordered_set<std::string> cached_files;
 
-    FileCache(const std::string &cache_directory) : local_cache_directory{cache_directory}
-    {
+    FileCache(const std::string &cache_directory) : local_cache_directory{cache_directory} {
     }
 
     // File name is sufficient for these functions to work
