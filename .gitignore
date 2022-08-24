@@ -58,3 +58,6 @@ x64/
 .vscode/
 .cache/
 log.txt
+build/
+Platform/
+.clang-format

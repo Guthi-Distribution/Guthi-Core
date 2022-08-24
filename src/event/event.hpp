@@ -20,18 +20,6 @@ enum EventStatus {
 
 typedef std::function<EventStatus(void *)> Handler;
 
-/*
-TODO:
-    - Event Type Implementation
-    - Event Category?
-    - Event Listener
-    - Buffered Event(Queue)
-    - Debug Data
-    - Event Dispatch
-    - Inheritance as a base event?
-    - Event Queue
-*/
-
 struct Event {
     EventType type;
     bool      handle_status;
