@@ -18,7 +18,8 @@ enum EventStatus {
     COMPLETED
 };
 
-typedef std::function<EventStatus(void *)> Handler;
+// typedef std::function<EventStatus(void *)> Handler;
+typedef EventStatus (*Handler) (void *);
 
 struct Event {
     EventType type;
@@ -76,9 +77,13 @@ struct EventHandler {
 struct EventQueueEntry {
     EventHandler     handler;
     EventQueueEntry *next;
-    std::string      debug_string;
+    std::string      debug_string = "Hello there";
 
     EventQueueEntry() = default;
+
+    void print() {
+        printf("%s\n", debug_string.c_str());
+    }
 
     EventQueueEntry(Event *event) : handler(event) {
     }
@@ -88,7 +93,19 @@ struct EventQueueEntry {
     Stores all the unhandled events
 */
 struct EventQueue {
-    void         push_event(Event *e, Handler handler);
+    void         push_event(Event *e, EventStatus (*handler) (void *)) {
+        EventQueueEntry *entry = new EventQueueEntry(e);
+        entry->handler.bind_handler(handler);
+        if (!head) {
+            entry->next = nullptr;
+            head = entry;
+            tail = entry;
+            return;
+        }
+
+        tail->next  = entry;
+        entry->next = nullptr;
+    }
 
     EventHandler pop_event();
 

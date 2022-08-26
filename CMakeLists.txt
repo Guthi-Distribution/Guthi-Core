@@ -4,7 +4,7 @@ project(Guthi)
 cmake_minimum_required(VERSION 3.10)
 
 set(SRC "./src")
-set(INCLUDE "./include")
+set(INCLUDE "./include" ${CMAKE_SOURCE_DIR}/src/)
 
 set(CMAKE_BUILD_TYPE Debug)
 set(CMAKE_CXX_STANDARD 20)
@@ -14,7 +14,6 @@ set(CAMKE_BINARY_DIR ${CMAKE_SOURCE_DIR}/bin)
 
 file(GLOB FILESYSTEM_SRC ${CMAKE_CURRENT_SOURCE_DIR}/src/filesystem/*.cpp)
 file(GLOB EVENT_SRC ${CMAKE_CURRENT_SOURCE_DIR}/src/event/*.cpp)
-set(CMAKE_INCLUDE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/src/)
 set(CMAKE_CURRENT_BINARY_DIR ${CMAKE_SOURCE_DIR}/binary)
 
 if(WIN32)
