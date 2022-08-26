@@ -1,20 +1,9 @@
-#include "event.hpp"
+#include "event/event.h"
 
 namespace Guthi
 {
 
-void EventQueue::push_event(Event *e, Handler handler) {
-    EventQueueEntry *entry = new EventQueueEntry(e);
-    entry->handler.bind_handler(handler);
-    if (!head && !tail) {
-        head = entry;
-        tail = entry;
-        return;
-    }
-
-    tail->next  = entry;
-    entry->next = nullptr;
-}
+// void EventQueue::push_event(Event *e, Handler handler) 
 
 EventHandler EventQueue::pop_event() {
     EventHandler e = head->handler;
