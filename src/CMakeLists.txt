@@ -10,10 +10,12 @@ include_directories(${INCLUDE})
 
 file(GLOB FILESYSTEM_SRC ${CMAKE_CURRENT_SOURCE_DIR}/src/filesystem/*.cpp)
 file(GLOB EVENT_SRC ${CMAKE_CURRENT_SOURCE_DIR}/src/event/*.cpp)
+file(GLOB SYS_SRC ${CMAKE_CURRENT_SOURCE_DIR}/src/runtime/*.cpp)
+
 set(CMAKE_CURRENT_BINARY_DIR ${CMAKE_SOURCE_DIR}/binary)
 
 if(WIN32)
-	add_executable(guthi_exec ${SRC}/main.cpp ${SRC}/filesystem/fs.cpp ${SRC}/filesystem/cache.cpp)
+	add_executable(guthi_exec ${SRC}/main.cpp ${SRC}/filesystem/fs.cpp ${SRC}/filesystem/cache.cpp ${SRC}/runtime/sys_info.cpp)
 	target_link_libraries(guthi_exec gdi32 kernel32 user32)
 	target_compile_features(guthi_exec PUBLIC cxx_std_20)
 
@@ -23,7 +25,7 @@ if(WIN32)
 endif(WIN32)
 
 if(UNIX)
-	add_executable(file_sharing ${SRC}/main.cpp ${FILESYSTEM_SRC} ${EVENT_SRC})
-	target_link_libraries(file_sharing pthread dl m)
+	add_executable(guthi_exec ${SRC}/main.cpp ${FILESYSTEM_SRC} ${EVENT_SRC} ${SRC}/filesystem/cache.cpp ${SRC}/runtime/sys_info.cpp)
+	target_link_libraries(guthi_exec pthread dl m)
 	set(CMAKE_CXX_FLAGS "-fsanitize=address")
 endif(UNIX)

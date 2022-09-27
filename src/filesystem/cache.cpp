@@ -33,7 +33,11 @@ void FileCache::AddFileToCache(RawFile const &file)
     entry.size      = file.file_size;
     entry.timestamp = chrono::system_clock::now();
     entry.data      = std::unique_ptr<uint8_t[]>(new uint8_t[entry.size]);
+    #if defined(_MSC_VER)
     memcpy_s(entry.data.get(), sizeof(uint8_t) * entry.size, file.data,sizeof(uint8_t) * entry.size); 
+    #else 
+    memcpy(entry.data.get(), file.data, sizeof(uint8_t) * entry.size); 
+    #endif
 
     this->caches.OnRAMCached[entry.file_name] = std::move(entry); 
 }
@@ -43,11 +47,11 @@ bool FileCache::RemoveFromCache(std::string_view file_name)
     if (this->IsFileCached(file_name))
         return false;
 
-    auto it = this->caches.OnRAMCached.find(std::string(file));
+    auto it = this->caches.OnRAMCached.find(std::string(file_name));
     if (it != this->caches.OnRAMCached.end())
         this->caches.OnRAMCached.erase(it); 
 
-    auto nit = this->caches.OnDiskCached.find(std::string(file));
+    auto nit = this->caches.OnDiskCached.find(std::string(file_name));
     if (nit != this->caches.OnDiskCached.end())
         this->caches.OnDiskCached.erase(it); 
     return true; 
