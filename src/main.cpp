@@ -3,20 +3,10 @@
 #include <cstdio>
 #include <iostream>
 
-#include "./filesystem/fs.hpp"
-#include "./event/event.h"
+#include <shared_memory/shm.h>
 
-// Lets get started with file sharing then
 
-Guthi::EventStatus handler_function(void *test) {
-    // return 1;
-}
-
-int main(int argc, char *argv[]) {
-    printf("Hello from Guthi : A framework for distributed application development\n");
-
-    Guthi::Event event;
-    Guthi::EventQueue queue;
-    queue.push_event(&event, handler_function);
-    queue.get_event();
+int main() {
+    SharedMemory memory("s_mem", O_CREAT, S_IWUSR | S_IWRITE);
+    memory.write_data("Hello there\n");
 }
