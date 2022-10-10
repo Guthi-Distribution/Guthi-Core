@@ -1,16 +1,30 @@
 #include "./fs.hpp"
 #include <vector>
+#include <memory>
 
 namespace FileSystem
 {
-enum class FileType
+
+enum class FileType : uint16_t
 {
     Directory,
     File
 };
 
+struct NetworkNode
+{
+    enum class IPVersion : uint16_t
+    {
+        IPv4,
+        IPv6
+    };
+    IPVersion ip_version;
+    uint16_t  port_addr;
+    uint8_t   ip_addr[16]; //  Consumes  4 byte if ip_version == IPv4
+};
+
 // Helpers
-std::ostream &operator<<(std::ostream &os, FileType &file_type)
+constexpr std::ostream &operator<<(std::ostream &os, FileType &file_type)
 {
     switch (file_type)
     {
@@ -27,16 +41,19 @@ std::ostream &operator<<(std::ostream &os, FileType &file_type)
 // Represent the file system locally first
 struct FileContent
 {
-    // NodeDetails node; // Node details from which its fetched
-    std::string                name;
-    FileType                   type;
+    FileType                                  type;
 
-    std::vector<FileContent *> contents;
+    NetworkNode                               network_node; //  Node details of where the file  is stored physically
+    std::string                               name;
+
+    std::vector<std::shared_ptr<FileContent>> contents; // might add a allocator here later
+
+    static constexpr int                      MAX_FILE_CAPACITY = 256; // Choosen arbitrary
 };
 
 // Pretty print the FileContent
 
-void FileFormatter(std::ostream &os, const FileContent &file, const uint32_t depth)
+inline void FileFormatter(std::ostream &os, const FileContent &file, const uint32_t depth)
 {
     // TODO :: Upgrade it for multiple console supports
     // For now printable ascii characters
@@ -75,21 +92,21 @@ void FileFormatter(std::ostream &os, const FileContent &file, const uint32_t dep
         FileFormatter(os, *dir, depth + 1);
 }
 
-std::ostream &operator<<(std::ostream &os, const FileContent &file)
+inline std::ostream &operator<<(std::ostream &os, const FileContent &file)
 {
     FileFormatter(os, file, 1);
     return os;
 }
 
 // AddFile/Directory to the current content
-bool AddFile(FileContent &file_dir, FileContent *file)
+inline bool AddFile(FileContent &file_dir, std::shared_ptr<FileContent> file)
 {
     file_dir.contents.push_back(file);
     return true;
 }
 
 // Remove file from the current directory
-bool RemoveFile(FileContent &file_dir, FileContent *file)
+inline bool RemoveFile(FileContent &file_dir, std::shared_ptr<FileContent> file)
 {
     //// Shall just name be compared to mark for deletion instead of while directory recursively?
     //// auto iter = std::find(file_dir.contents.begin(), file_dir.contents.end(), file);
@@ -104,7 +121,7 @@ bool RemoveFile(FileContent &file_dir, FileContent *file)
 // file1 and file2 are mergeable files with same level and same directory label
 // file1 is modified to incorporate changes from file2
 
-void MergeSingleFileContent(FileContent *file1, FileContent *file2)
+inline void MergeSingleFileContent(std::shared_ptr<FileContent> file1, std::shared_ptr<FileContent> file2)
 {
     for (auto const &x : file2->contents)
     {
@@ -126,11 +143,11 @@ void MergeSingleFileContent(FileContent *file1, FileContent *file2)
 }
 
 // The most important function on the whole network file system
-FileContent *MergeTotalFileContent(std::vector<FileContent *> const &files)
+inline std::shared_ptr<FileContent> MergeTotalFileContent(std::vector<std::shared_ptr<FileContent>> const &files)
 {
-    // Start at the top hirarchy and move downward, at each step merging file at the same hierarchy
+    // Start at the top hierarchy and move downward, at each step merging file at the same hierarchy
     // If the folders aren't same at that level, create seperate directory
-    auto dfs        = new FileContent();
+    auto dfs        = std::shared_ptr<FileContent>(new FileContent());
     dfs->name       = "Guthi File System"; // Top root level directory content
     dfs->type       = FileSystem::FileType::Directory;
 
@@ -161,5 +178,32 @@ struct NetworkFS
     //          -- Merging of folders with same name
     //          -- Querying for file independent of the nodes in which its present
     // Learn to merge FileContent from multiple nodes to provide coherent view
+    FileContent GFS_root;
+    FileContent local_fs;
+    FileCache   local_cache;
+
+    NetworkFS(std::string_view cache_dir) : local_cache{FileCache(cache_dir)}
+    {
+    }
+
+    std::vector<uint8_t> SerializeLocalFS() const;
+
+    bool SyncGFS()
+    {
+        return false;
+    }
+
+    bool MergeDiff()
+    {
+        return false;
+    }
+
+    FileContent &GetRoot()
+    {
+        return GFS_root;
+    }
+
+    static bool DeserializeToFileContent(std::vector<uint8_t> &data, FileContent& content);
+
 };
 } // namespace FileSystem
