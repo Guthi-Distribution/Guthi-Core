@@ -10,6 +10,7 @@ include_directories(${INCLUDE})
 
 file(GLOB FILESYSTEM_SRC ${CMAKE_CURRENT_SOURCE_DIR}/src/filesystem/*.cpp)
 file(GLOB EVENT_SRC ${CMAKE_CURRENT_SOURCE_DIR}/src/event/*.cpp)
+file(GLOB EVENT_SRC ${CMAKE_CURRENT_SOURCE_DIR}/src/shared_memory/*.cpp ${CMAKE_CURRENT_SOURCE_DIR}/src/shared_memory/*.h)
 set(CMAKE_CURRENT_BINARY_DIR ${CMAKE_SOURCE_DIR}/binary)
 
 if(WIN32)

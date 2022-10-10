@@ -1,14 +1,9 @@
-#include <unistd.h>
-#include <fcntl.h>
-#include <sys/mman.h>
-#include <sys/shm.h>
-#include <sys/stat.h>
 #include <cstdio>
 #include <string_view>
 #include <errno.h>
 #include <stdlib.h>
-#include <semaphore.h>
 #include <inttypes.h>
+#include <cstring>
 
 #ifndef SIZE_SHARED_MEM
     #define SIZE_SHARED_MEM 4096
@@ -16,53 +11,84 @@
     static_assert SIZE_SHARED_MEM < 65536, "Size of set shared mem greater than 65536 is not allowed";
 #endif
 
+    
+
 #ifdef _MSC_VER
-TODO: Windows version
+#include <Windows.h>
+    struct ShmSegment {
+        uint16_t size = SIZE_SHARED_MEM;
+        uint16_t count;
+        char buff[SIZE_SHARED_MEM];
+    };
+
+    struct SharedMemory {
+    private:
+        HANDLE hnd;
+
+    public:
+        ShmSegment* shm_segment;
+
+        SharedMemory() {
+            hnd = CreateFileMapping(
+                INVALID_HANDLE_VALUE,
+                NULL,
+                PAGE_READWRITE,
+                0,
+                sizeof(ShmSegment),
+                "Guthi_Shared_memory"
+            );
+        }
+
+        void read_data();
+        void write_data();
+    };
+
 #endif
 
 #define SHM_KEY 69
 
-struct ShmSegment {
-    uint16_t count;
-    char buff[SIZE_SHARED_MEM];
-};
+
 
 #if defined(__gnu_linux__) || defined(__linux__) || defined(linux) || defined(__linux)
-struct SharedMemory {
-    int id; // file descriptor
-    ShmSegment *memory; // memory which will be mapped to shared memory
-    sem_t sem;
-    key_t key;
+#include <semaphore.h>
+#include <unistd.h>
+#include <fcntl.h>
+#include <sys/mman.h>
+#include <sys/shm.h>
+#include <sys/stat.h>
 
-    SharedMemory(const char* _name, int flag, int mode) {
+
+
+struct SharedMemory {
+private:
+    int id; // file descriptor
+    ShmSegment *shm_segment; // memory which will be mapped to shared memory
+
+public:
+    SharedMemory() {
         id = shmget(SHM_KEY, sizeof(ShmSegment), IPC_CREAT | (S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP));
         if (id == -1) {
             perror("Shared Memory Creation error");
-            if (errno == EACCES) printf("A shared  memory identifier exists for key but operation permission as specified by the low-order nine bits of shmflg would not be granted.\n");
-            if (errno == EEXIST) printf("A shared memory identifier exists for the argument key but (shmflg &IPC_CREAT) &&(shmflg &IPC_EXCL) is non-zero.\n");
-            if (errno == EINVAL) printf("A shared memory segment is to be created and the value of size is less than the system-imposed minimum or greater than the system-imposed maximum.\n");
-            if (errno == EINVAL) printf("No shared memory segment is to be created and a shared memory segment exists for key but the size of the segment associated with it is less than size.\n");
-            if (errno == ENOENT) printf("A shared memory identifier does not exist for the argument key and (shmflg &IPC_CREAT) is 0.\n");
-            if (errno == ENOMEM) printf("A shared memory identifier and associated shared memory segment are to be created, but the amount of available physical memory is not sufficient to fill the request.\n");
-            if (errno == ENOSPC) printf("A shared memory identifier is to be created, but the system-imposed limit on the maximum number of allowed shared memory identifiers system-wide would be exceeded.\n");
             exit(-1);
         }
-        memory = (ShmSegment *)shmat(id, NULL, 0);   
-        if (memory == NULL) {
-            perror("Memory attach error\n");
+        shm_segment = (ShmSegment *)shmat(id, NULL, 0);   
+        if (shm_segment == NULL) {
+            perror("Memory attach error");
         }
     }
 
     void write_data(const char *data, int position = 0) {
-        
+        shm_segment->count = strlen(data);
+        strcpy(shm_segment->buff + position, data);
     }
 
-    const char* read_data(int position = 0) {
+    void read_data() {
+        printf("%s\n", shm_segment->buff);
     }
 
     ~ SharedMemory() {
-        shmdt((const void *)memory);
-        
+        shmdt((const void *)shm_segment);
+        shmctl(id, IPC_RMID, NULL);
     }
 };
 #endif
