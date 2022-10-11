@@ -37,10 +37,26 @@ struct ShmSegment {
                 sizeof(ShmSegment),
                 "Guthi_Shared_memory"
             );
+            if (hnd == NULL) {
+                printf("File mapping creation error, error code: %d\n", GetLastError());
+                return;
+            }
+
+            shm_segment = (ShmSegment*)MapViewOfFile(hnd, FILE_MAP_ALL_ACCESS, 0, 0, sizeof(ShmSegment));
+            if (shm_segment == NULL) {
+                printf("Map View of File error, error code: %d\n", GetLastError());
+                CloseHandle(hnd);
+                return; 
+            }
         }
 
         void read_data();
         void write_data();
+
+        ~SharedMemory() {
+            UnmapViewOfFile(shm_segment);
+            CloseHandle(hnd);
+        }
     };
 
 #endif
