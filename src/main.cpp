@@ -8,4 +8,5 @@
 int main() {
     SharedMemory mem;
     mem.read_data();
+    getchar();
 }
