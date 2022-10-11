@@ -29,12 +29,9 @@ struct ShmSegment {
         ShmSegment* shm_segment;
 
         SharedMemory() {
-            hnd = CreateFileMapping(
-                INVALID_HANDLE_VALUE,
-                NULL,
-                PAGE_READWRITE,
-                0,
-                sizeof(ShmSegment),
+            hnd = OpenFileMapping(
+                FILE_MAP_ALL_ACCESS,   // read/write access
+                FALSE,
                 "Guthi_Shared_memory"
             );
             if (hnd == NULL) {
@@ -51,7 +48,7 @@ struct ShmSegment {
         }
 
         void read_data();
-        void write_data();
+        void write_data(char* data, int position = 0);
 
         ~SharedMemory() {
             UnmapViewOfFile(shm_segment);
@@ -92,14 +89,9 @@ public:
         }
     }
 
-    void write_data(const char *data, int position = 0) {
-        shm_segment->count = strlen(data);
-        strcpy(shm_segment->buff + position, data);
-    }
+    void write_data(const char* data, int position = 0);
 
-    void read_data() {
-        printf("%s\n", shm_segment->buff);
-    }
+    void read_data();
 
     ~ SharedMemory() {
         shmdt((const void *)shm_segment);
