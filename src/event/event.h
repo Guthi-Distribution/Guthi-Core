@@ -93,24 +93,10 @@ struct EventQueueEntry {
     Stores all the unhandled events
 */
 struct EventQueue {
-    void         push_event(Event *e, EventStatus (*handler) (void *)) {
-        EventQueueEntry *entry = new EventQueueEntry(e);
-        entry->handler.bind_handler(handler);
-        if (!head) {
-            entry->next = nullptr;
-            head = entry;
-            tail = entry;
-            return;
-        }
-
-        tail->next  = entry;
-        entry->next = nullptr;
-    }
+    void         push_event(Event *e, EventStatus (*handler) (void *));
 
     EventHandler pop_event();
-
     EventHandler get_event();
-
   private:
     EventQueueEntry *head = nullptr;
     EventQueueEntry *tail = nullptr;

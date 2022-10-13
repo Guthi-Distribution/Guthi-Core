@@ -8,6 +8,15 @@
 #include <thread>
 #include <vector>
 
+#include <shared_memory/shm.h>
+
+int main() {
+    SharedMemory mem;
+    mem.read_data();
+    getchar();
+}
+
+#if 0
 #include "./event/event.h"
 #include "./filesystem/fs.hpp"
 #include "./filesystem/network_fs.hpp"
@@ -75,3 +84,4 @@ int main(int argc, char *argv[])
     std::cout << deserialized.name << std::endl;
     return 0;
 }
+#endif
