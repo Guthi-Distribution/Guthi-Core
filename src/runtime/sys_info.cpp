@@ -37,6 +37,12 @@ struct PDHData
     PDH_HQUERY   cpu_query;
     PDH_HCOUNTER cpu_total;
 };
+#else
+
+struct LinuxSysData
+{
+    uint64_t l_total_usr, l_total_usr_low, l_total_sys, l_total_idle;
+};
 
 #endif
 
@@ -128,8 +134,39 @@ double GetCurrentAllCPUUsage()
     PdhGetFormattedCounterValue(pdh_meta.cpu_total, PDH_FMT_DOUBLE, NULL, &counter_val);
     return counter_val.doubleValue;
 #else
-// #error "Querying current CPU not supported on other platforms than win32 atm.";
-return 0; 
+    // #error "Querying current CPU not supported on other platforms than win32 atm.";
+    static auto proc_stat = []() {
+        LinuxSysData data;
+        FILE        *file = fopen("/proc/stat", "rb")
+        
+        
+        if (!file) {
+            std::cout << "Error opening /proc/stat " << std::endl; 
+            return data;
+        }
+            
+        fscanf(file, "cpu %lu %lu %lu %lu", &data.l_total_usr, &data.l_total_usr_low, &data.l_total_sys,
+               &data.l_total_idle);
+        fclose(file);
+        return data;
+    }();
+
+    double percent;
+    FILE    *file = fopen("/proc/stat", "rb");
+    if (!file)
+        return 0.0f;
+    uint64_t total_user, total_user_low, total_sys, total_idle, total;
+    fscanf(file, "cpu %lu %lu %lu %lu", &total_user, &total_user_low, &total_sys, &total_idle);
+
+    total = (total_user - proc_stat.l_total_usr) + (total_user_low - proc_stat.l_total_usr_low) +
+            (total_sys - proc_stat.l_total_sys);
+    fclose(file);
+
+    percent = total;
+    total   = total + (total_idle - proc_stat.l_total_idle);
+    percent = percent / total;
+    percent = percent * 100;
+    return percent;
 #endif
 }
 
