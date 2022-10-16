@@ -3,6 +3,7 @@
 #include "./sys_info.hpp"
 #include <iostream>
 #include <memory>
+#include "./parser_cpuinfo.hpp"
 
 #define ByteToKB(byte_) ((byte_) / 1024)
 #define ByteToMB(byte_) (ByteToKB(byte_) / 1024)
@@ -106,6 +107,7 @@ ProcessorStatus GetSysProcessorInfo()
     }
 #else
 // #error "Processor Status info not implemented for other OS except Win32"
+    GetSystemInfo(&processor_status);
 #endif
     return processor_status;
 }

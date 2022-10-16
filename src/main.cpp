@@ -10,13 +10,14 @@
 
 #include <shared_memory/shm.h>
 
+#if 0
 int main() {
     SharedMemory mem;
     mem.read_data();
     getchar();
 }
+#endif
 
-#if 0
 #include "./event/event.h"
 #include "./filesystem/fs.hpp"
 #include "./filesystem/network_fs.hpp"
@@ -24,7 +25,7 @@ int main() {
 
 #ifdef _MSC_VER
 #define safe_memcpy(dest, dest_size, src, src_size) memcpy_s(dest, dest_size, src, src_size)
-#elif
+#else
 #define safe_memcpy(dest, dest_size, src, src_size) memcpy(dest, src, src_size)
 #endif
 
@@ -40,7 +41,8 @@ extern "C" void             *GetLocalFileMetadata(uint32_t *size)
 }
 
 int main(int argc, char *argv[])
-{
+{   
+    Runtime::GetSysProcessorInfo();
     printf("Hello from Guthi : A framework for distributed application development\n");
 
     Runtime::MemoryStatus status = Runtime::GetSysMemoryInfo();
@@ -84,4 +86,3 @@ int main(int argc, char *argv[])
     std::cout << deserialized.name << std::endl;
     return 0;
 }
-#endif

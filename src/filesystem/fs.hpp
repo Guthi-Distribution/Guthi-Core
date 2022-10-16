@@ -10,6 +10,7 @@
 #include <cstring>
 #include <filesystem>
 #include <unordered_map>
+#include <algorithm>
 
 
 // Abstraction to deal with local file changes/writing/opening
