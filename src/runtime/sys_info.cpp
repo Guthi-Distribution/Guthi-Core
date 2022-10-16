@@ -137,8 +137,7 @@ double GetCurrentAllCPUUsage()
     // #error "Querying current CPU not supported on other platforms than win32 atm.";
     static auto proc_stat = []() {
         LinuxSysData data;
-        FILE        *file = fopen("/proc/stat", "rb")
-        
+        FILE        *file = fopen("/proc/stat", "rb");
         
         if (!file) {
             std::cout << "Error opening /proc/stat " << std::endl; 

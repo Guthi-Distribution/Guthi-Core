@@ -23,12 +23,6 @@ int main() {
 #include "./filesystem/network_fs.hpp"
 #include "./runtime/sys_info.hpp"
 
-#ifdef _MSC_VER
-#define safe_memcpy(dest, dest_size, src, src_size) memcpy_s(dest, dest_size, src, src_size)
-#else
-#define safe_memcpy(dest, dest_size, src, src_size) memcpy(dest, src, src_size)
-#endif
-
 static FileSystem::NetworkFS GFS("./tmp");
 
 extern "C" void             *GetLocalFileMetadata(uint32_t *size)

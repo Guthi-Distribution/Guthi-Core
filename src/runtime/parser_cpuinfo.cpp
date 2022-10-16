@@ -173,7 +173,7 @@ static void parse_maximum_cpu_hz(Parser *parser, Runtime::ProcessorStatus *proce
     }
 
     for (int i = 0; i < processor_status->processor_count; i++) {
-        processor_status->processors->total_mhz = value;
+        processor_status->processors[i].total_mhz = value;
     }
 } 
 

@@ -11,11 +11,18 @@
 #include <filesystem>
 #include <unordered_map>
 #include <algorithm>
+#include <string.h>
+
+#ifdef _MSC_VER
+#define safe_memcpy(dest, dest_size, src, src_size) memcpy_s(dest, dest_size, src, src_size)
+#else
+#define safe_memcpy(dest, dest_size, src, src_size) memcpy(dest, src, src_size)
+#endif
+
 
 // Abstraction to deal with local file changes/writing/opening
 
 namespace chrono = std::chrono;
-
 namespace FileSystem
 {
 

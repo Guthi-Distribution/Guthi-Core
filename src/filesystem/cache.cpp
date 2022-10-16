@@ -98,7 +98,7 @@ RawFile FileCache::GetCachedFile(std::string_view file)
         if (cache_entry->location == CacheLocation::OnRAM)
         {
             r_file.data = new uint8_t[r_file.file_size];
-            memcpy_s(r_file.data, r_file.file_size, cache_entry->data.get(), cache_entry->size);
+            safe_memcpy(r_file.data, r_file.file_size, cache_entry->data.get(), cache_entry->size);
         }
         else
         {
