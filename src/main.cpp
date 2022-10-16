@@ -53,7 +53,7 @@ int main(int argc, char *argv[])
         Runtime::ProcessorStatus processor = Runtime::GetSysProcessorInfo();
         Runtime::LogProcessorStatus(processor);
         std::cout << "Current CPU Usage : " << Runtime::GetCurrentAllCPUUsage() << "%" << std::endl;
-        std::this_thread::sleep_for(chrono::milliseconds(50));
+        std::this_thread::sleep_for(chrono::milliseconds(500));
     }
 
     using namespace FileSystem;
