@@ -46,28 +46,32 @@ struct Semaphore {
                 - false means that the call does not block and returns immediately
                 - true:  call waits for the semaphore to unlock
     */
-    void lock(bool block_call  = true) {
+    int lock(bool block_call  = true) {
         sembuf buffer;
         buffer.sem_num = SEM_NUM;
         buffer.sem_op = -1;
-        buffer.sem_flg = block_call? 0: IPC_NOWAIT;
+        buffer.sem_flg = (block_call? 0: IPC_NOWAIT) | SEM_UNDO;
         int err = semop(id, &buffer, 1);
         if (err < 0) {
             if (errno == EINVAL && !block_call) {
-                return ;
+                return 0;
             }
             perror("Semaphore operation error");
+            return -1;
         }
     }
 
-    void unlock() {
+    int unlock() {
         sembuf buffer;
         buffer.sem_num = SEM_NUM;
         buffer.sem_op = 1;
         int err = semop(id, &buffer, 1);
         if (err < 0) {
-            perror("Semaphore operation error");
+            perror("Semaphore unlock operation error");
+            return -1;
         }
+
+        return 0;
     }
 
     ~ Semaphore() {
