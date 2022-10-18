@@ -22,6 +22,7 @@ int main() {
 #include "./filesystem/fs.hpp"
 #include "./filesystem/network_fs.hpp"
 #include "./runtime/sys_info.hpp"
+#include "shared_memory/semaphore.hpp"
 
 static FileSystem::NetworkFS GFS("./tmp");
 
@@ -34,6 +35,12 @@ extern "C" void             *GetLocalFileMetadata(uint32_t *size)
     return ptr;
 }
 
+int main() {
+    Semaphore s;
+}
+
+
+#if 0
 int main(int argc, char *argv[])
 {   
     Runtime::GetSysProcessorInfo();
@@ -80,3 +87,4 @@ int main(int argc, char *argv[])
     std::cout << deserialized.name << std::endl;
     return 0;
 }
+#endif
