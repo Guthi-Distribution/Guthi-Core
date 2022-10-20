@@ -37,6 +37,9 @@ extern "C" void             *GetLocalFileMetadata(uint32_t *size)
 
 int main() {
     Semaphore s;
+    s.lock();
+
+    s.unlock();
 }
 
 

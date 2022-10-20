@@ -1,4 +1,75 @@
+#include "core/error.hpp"
+
+// forward declaration of semaphore structure
+struct Semaphore;
+
+// define the semaphore 
+#define N_SEMS 1 // total number of semaphore
+#define SEM_NUM 0 // current sempahore number
+
+enum SemaphoreResult {
+    SUCESS = 0,
+    TIMEOUT = -1,
+    SEM_ERROR
+};
+
 #ifdef _MSC_VER
+#include <Windows.h>
+
+const char* sem_name = "guthi_semaphore";
+struct Semaphore {
+    HANDLE semHnd;
+
+    Semaphore() {
+        semHnd = CreateSemaphore(NULL, N_SEMS, N_SEMS, sem_name);
+        if (semHnd == NULL) {
+            printf("Semaphore creation error, error code: %d", GetLastError());
+            return;
+        }
+    }
+
+    /*
+        Lock while entering the critical section
+        Args:
+            block_call(bool): flag to indicate whether the wait should be blocking or not
+                - false means that the call does not block and returns immediately
+                - true:  call waits for the semaphore to unlock
+        Return:
+            (int): if return value is 0, then the process can proceed to use critical region, else cannot
+    */
+    int lock(bool block_call = true) {
+        DWORD timeout_time = block_call ? INFINITY : 0;
+        DWORD wait_result;
+        wait_result = WaitForSingleObject(semHnd, timeout_time);
+
+        //TODO(Tilak): Do we need to check for WAIT_ABANDONED?
+        if (wait_result == WAIT_OBJECT_0) {
+            return 0;
+        }
+        else if (wait_result == WAIT_TIMEOUT) {
+            return -1;
+        }
+        else if (wait_result == WAIT_FAILED) {
+            print_error("Semaphore waiting failed");
+        }
+
+        return -1;
+    }
+
+    int unlock() {
+        bool success = ReleaseSemaphore(semHnd, 1, NULL);
+        if (success) {
+            return 0;
+        }
+        print_error("Semaphore Release error");
+        return -1;
+
+    }
+
+    ~Semaphore() {
+        CloseHandle(semHnd);
+    }
+};
 
 #else
 #include <semaphore.h>
@@ -14,14 +85,6 @@
 #ifndef KEY
 #define KEY 69
 #endif
-
-// define the semaphore 
-#define N_SEMS 1
-#define SEM_NUM 0
-
-enum SemOperation {
-    GE
-};
 
 struct Semaphore {
     int id;
@@ -45,6 +108,8 @@ struct Semaphore {
             block_call(bool): flag to indicate whether the wait should be blocking or not 
                 - false means that the call does not block and returns immediately
                 - true:  call waits for the semaphore to unlock
+        Return:
+            (int): if return value is 0, then the process can proceed to use critical region, else cannot
     */
     int lock(bool block_call  = true) {
         sembuf buffer;

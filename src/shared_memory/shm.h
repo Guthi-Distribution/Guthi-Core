@@ -4,6 +4,7 @@
 #include <stdlib.h>
 #include <inttypes.h>
 #include <cstring>
+#include <core/error.hpp>
 
 
 #ifndef SIZE_SHARED_MEM
@@ -35,13 +36,13 @@ struct ShmSegment {
                 "Guthi_Shared_memory"
             );
             if (hnd == NULL) {
-                printf("File mapping creation error, error code: %d\n", GetLastError());
+                print_error("File mapping creation error\n");
                 return;
             }
 
             shm_segment = (ShmSegment*)MapViewOfFile(hnd, FILE_MAP_ALL_ACCESS, 0, 0, sizeof(ShmSegment));
             if (shm_segment == NULL) {
-                printf("Map View of File error, error code: %d\n", GetLastError());
+                print_error("Map View of File error\n");
                 CloseHandle(hnd);
                 return; 
             }
