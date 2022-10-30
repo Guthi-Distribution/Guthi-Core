@@ -21,9 +21,9 @@ struct Semaphore {
     HANDLE semHnd;
 
     Semaphore() {
-        semHnd = CreateSemaphore(NULL, N_SEMS, N_SEMS, sem_name);
+        semHnd = OpenSemaphore(SEMAPHORE_ALL_ACCESS, 0, sem_name);
         if (semHnd == NULL) {
-            printf("Semaphore creation error, error code: %d", GetLastError());
+            print_error("Semaphore creation error, error code");
             return;
         }
     }
@@ -38,7 +38,7 @@ struct Semaphore {
             (int): if return value is 0, then the process can proceed to use critical region, else cannot
     */
     int lock(bool block_call = true) {
-        DWORD timeout_time = block_call ? INFINITY : 0;
+        DWORD timeout_time = block_call ? INFINITE : 0;
         DWORD wait_result;
         wait_result = WaitForSingleObject(semHnd, timeout_time);
 
