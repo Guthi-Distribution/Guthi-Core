@@ -14,7 +14,7 @@ enum EventType {
 };
 
 enum EventStatus {
-    ERROR = 0,
+    ERROR_STATUS = 0,
     COMPLETED
 };
 
