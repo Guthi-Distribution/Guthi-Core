@@ -35,17 +35,7 @@ extern "C" void             *GetLocalFileMetadata(uint32_t *size)
     return ptr;
 }
 
-int main() {
-    Semaphore s;
-    s.lock();
-    getchar();
-    s.unlock();
-}
-
-
-#if 0
-int main(int argc, char *argv[])
-{   
+int main(int argc, char *argv[]) {   
     Runtime::GetSysProcessorInfo();
     printf("Hello from Guthi : A framework for distributed application development\n");
 
@@ -90,4 +80,3 @@ int main(int argc, char *argv[])
     std::cout << deserialized.name << std::endl;
     return 0;
 }
-#endif
