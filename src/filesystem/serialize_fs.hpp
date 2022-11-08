@@ -17,10 +17,10 @@ namespace FileSystem
 template <typename S> void serialize(S &s, FileSystem::FileContent &content)
 {
     s.value2b(content.type);
-    s.value2b(content.network_node.ip_version);
-    s.value2b(content.network_node.port_addr);
+    //s.value2b(content.network_node.ip_version);
+    //s.value2b(content.network_node.port_addr);
 
-    for (auto &x : content.network_node.ip_addr)
+    for (auto &x : content.network_node.ipv4)
         s.value1b(x);
     s.container1b(content.name, 64);
 

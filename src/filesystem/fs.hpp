@@ -9,7 +9,7 @@
 #include <cstdio>
 #include <cstring>
 #include <filesystem>
-#include <unordered_map>
+#include <map>
 #include <algorithm>
 #include <string.h>
 
@@ -18,7 +18,6 @@
 #else
 #define safe_memcpy(dest, dest_size, src, src_size) memcpy(dest, src, src_size)
 #endif
-
 
 // Abstraction to deal with local file changes/writing/opening
 
@@ -111,10 +110,7 @@ template <typename T> struct FileBufWriter
 
 // Let's complete the buffered reader first
 template <typename T>
-requires requires(T &x)
-{
-    x.FetchBlockWithSize(nullptr, 0);
-}
+requires requires(T &x) { x.FetchBlockWithSize(nullptr, 0); }
 struct FileBufReader
 {
     T     *underlying_file;
@@ -309,6 +305,7 @@ struct RawFile
     void DestroyFile()
     {
         delete[] data;
+        file_size = 0;
     }
 };
 
@@ -327,7 +324,8 @@ struct FileCache
     struct FileCacheEntry
     {
         CacheLocation                            location;
-        size_t                                   size; // in bytes
+        size_t                                   size;       // in bytes
+        uint8_t                                  ip_addr[4]; // location of node in the network
         std::string                              file_name;
         std::unique_ptr<uint8_t[]>               data = nullptr;
         chrono::time_point<chrono::system_clock> timestamp; // last updated timestamp of the cache
@@ -344,7 +342,7 @@ struct FileCache
     struct Caches
     {
         // TODO :: Try merging them, and take care about std::string
-        std::unordered_map<std::string, FileCacheEntry> OfflineCache;
+        std::multimap<std::string, FileCacheEntry> OfflineCache;
     } caches;
 
     FileCache(std::string_view cache_directory) : local_cache_directory{cache_directory}
@@ -352,13 +350,13 @@ struct FileCache
     }
 
     // File name is sufficient for these functions to work
-    bool            IsFileCached(std::string_view file) const;
-    bool            RemoveFromCache(std::string_view file);
-    FileCacheEntry *GetCachedEntry(std::string_view file);
-    RawFile         GetCachedFile(std::string_view file);
+    bool            IsFileCached(std::string_view file, uint8_t ip_addr[4]) const;
+    bool            RemoveFromCache(std::string_view file, uint8_t ip_addr[4]);
+    FileCacheEntry *GetCachedEntry(std::string_view file, uint8_t ip_addr[4]);
+    RawFile         GetCachedFile(std::string_view file, uint8_t ip_addr[4]);
 
     // Adding to cache requires the file to be created inside the cache directory
-    void AddFileToCache(RawFile const &file);
+    void AddFileToCache(RawFile &file, uint8_t ip_addr[4]);
     // void              UpdateCache(GenericFile<OSFile> const& file);
 
     static FileCache &GetLocalFileCache();

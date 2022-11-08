@@ -13,14 +13,15 @@ enum class FileType : uint16_t
 
 struct NetworkNode
 {
-    enum class IPVersion : uint16_t
-    {
-        IPv4,
-        IPv6
-    };
-    IPVersion ip_version;
-    uint16_t  port_addr;
-    uint8_t   ip_addr[16]; //  Consumes  4 byte if ip_version == IPv4
+    // enum class IPVersion : uint16_t
+    //{
+    //     IPv4,
+    //     IPv6
+    // };
+    // IPVersion ip_version;
+    // uint16_t  port_addr;
+    uint8_t ipv4[4] = {};
+    // uint8_t   ip_addr[16]; //  Consumes  4 byte if ip_version == IPv4
 };
 
 // Helpers
@@ -188,7 +189,7 @@ struct NetworkFS
 
     std::vector<uint8_t> SerializeLocalFS() const;
 
-    bool SyncGFS()
+    bool                 SyncGFS()
     {
         return false;
     }
@@ -203,7 +204,6 @@ struct NetworkFS
         return GFS_root;
     }
 
-    static bool DeserializeToFileContent(std::vector<uint8_t> &data, FileContent& content);
-
+    static bool DeserializeToFileContent(std::vector<uint8_t> &data, FileContent &content);
 };
 } // namespace FileSystem
