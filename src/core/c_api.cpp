@@ -1,14 +1,15 @@
-#include "./event/event.h"
-#include "./filesystem/fs.hpp"
-#include "./filesystem/network_fs.hpp"
-#include "./runtime/sys_info.hpp"
+#include "../filesystem/fs.hpp"
+#include "../filesystem/network_fs.hpp"
+#include "../runtime/sys_info.hpp"
+#include "c_api.h"
 #include "shared_memory/semaphore.hpp"
 #include <iostream>
 
+
+#ifdef __cplusplus
+extern "C" {
+#endif
 static FileSystem::NetworkFS GFS("./tmp");
-
-// C API Implementation
-
 void *GetLocalFileMetadata(uint32_t *size)
 {
     auto ser = GFS.SerializeLocalFS();
@@ -58,3 +59,11 @@ void PrettyPrintFileSystem()
     std::cout << "Local FS : \n" << GFS.local_fs << std::endl;
     std::cout << "Root FS : \n" << GFS.GFS_root << std::endl;
 }
+
+FileSystemRef InitFileSystem() {
+    return (FileSystemRef)&GFS;
+}
+
+#ifdef __cplusplus
+}
+#endif

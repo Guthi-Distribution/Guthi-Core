@@ -1,5 +1,4 @@
 // #include <format> --<> Wait till its support by gcc, clang has already
-
 #include <cstdint>
 #include <cstdio>
 #include <cstdlib>
@@ -8,21 +7,11 @@
 #include <thread>
 #include <vector>
 
-#include <shared_memory/shm.h>
-
-#if 0
-int main() {
-    SharedMemory mem;
-    mem.read_data();
-    getchar();
-}
-#endif
 
 #include "./event/event.h"
 #include "./filesystem/fs.hpp"
 #include "./filesystem/network_fs.hpp"
 #include "./runtime/sys_info.hpp"
-#include "shared_memory/semaphore.hpp"
 
 static FileSystem::NetworkFS GFS("./tmp");
 
