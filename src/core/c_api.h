@@ -2,8 +2,7 @@
 
 #include <stdint.h>
 #include <stdbool.h>
-
-
+#include "../runtime/sys_info.h"
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -18,7 +17,12 @@ void           PrettyPrintFileSystem();
 void           ReleaseLocalFileMetadata(void *meta_data);
 
 FileSystemRef InitFileSystem();
+MemoryStatus    GetSysMemoryInfo();
+ProcessorStatus GetSysProcessorInfo();
 
+void            _LogMemoryStatus(MemoryStatus memory_status);
+void            _LogProcessorStatus(ProcessorStatus processor_status);
+double          GetCurrentAllCPUUsage();
 
 #ifdef __cplusplus
 }

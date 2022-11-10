@@ -1,6 +1,5 @@
 #include "../filesystem/fs.hpp"
 #include "../filesystem/network_fs.hpp"
-#include "../runtime/sys_info.hpp"
 #include "c_api.h"
 #include "shared_memory/semaphore.hpp"
 #include <iostream>
@@ -62,6 +61,26 @@ void PrettyPrintFileSystem()
 
 FileSystemRef InitFileSystem() {
     return (FileSystemRef)&GFS;
+}
+
+MemoryStatus    _GetSysMemoryInfo() {
+    return GetSysMemoryInfo();
+}
+ProcessorStatus _GetSysProcessorInfo() {
+    return GetSysProcessorInfo();
+}
+
+void            _LogMemoryStatus(MemoryStatus memory_status) {
+    LogMemoryStatus(memory_status);
+}
+
+void            _LogProcessorStatus(ProcessorStatus processor_status) {
+    LogProcessorStatus(processor_status);
+
+}
+
+double          _GetCurrentAllCPUUsage() {
+    return GetCurrentAllCPUUsage();
 }
 
 #ifdef __cplusplus

@@ -49,14 +49,14 @@ struct LinuxSysData
 namespace Runtime
 {
 
-void LogMemoryStatus(MemoryStatus &memory_status)
+void LogMemoryStatus(MemoryStatus memory_status)
 {
     std::cout << "Available ram : " << memory_status.available_ram
               << "\nTotal ram : " << memory_status.installed_physical_ram
               << "\nMemory load : " << memory_status.memory_load << std::endl;
 }
 
-void LogProcessorStatus(ProcessorStatus &processor_status)
+void LogProcessorStatus(ProcessorStatus processor_status)
 {
     for (uint32_t pid = 0; pid < processor_status.processor_count; ++pid)
     {
@@ -79,7 +79,7 @@ MemoryStatus GetSysMemoryInfo()
     struct sysinfo sys_info;
     sysinfo(&sys_info);
     status.installed_physical_ram = ByteToMB(sys_info.totalram * sys_info.mem_unit);
-    status.available_ram          = ByteToMB(sys_info.freeram * sys_info.mem_unit);
+    status.available_ram          = ByteToMB((uint64_t)sys_info.freeram * sys_info.mem_unit);
     status.memory_load            = int(float(sys_info.freeram) / float(sys_info.totalram) * 100);
 #endif
     return status;
@@ -134,7 +134,6 @@ double GetCurrentAllCPUUsage()
     PdhGetFormattedCounterValue(pdh_meta.cpu_total, PDH_FMT_DOUBLE, NULL, &counter_val);
     return counter_val.doubleValue;
 #else
-    // #error "Querying current CPU not supported on other platforms than win32 atm.";
     static auto proc_stat = []() {
         LinuxSysData data;
         FILE        *file = fopen("/proc/stat", "rb");
