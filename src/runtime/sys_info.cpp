@@ -1,6 +1,7 @@
 // Implemented for win32 only for now
 
 #include "./sys_info.hpp"
+#include <cstdio>
 #include <iostream>
 #include <memory>
 #include "./parser_cpuinfo.hpp"
@@ -77,10 +78,16 @@ MemoryStatus GetSysMemoryInfo()
     status.memory_load            = mem_status.dwMemoryLoad;
 #else
     struct sysinfo sys_info;
-    sysinfo(&sys_info);
+    int err = sysinfo(&sys_info);
+    if (err < 0) {
+        perror("Sysinfo memory error");
+    }
     status.installed_physical_ram = ByteToMB(sys_info.totalram * sys_info.mem_unit);
-    status.available_ram          = ByteToMB((uint64_t)sys_info.freeram * sys_info.mem_unit);
-    status.memory_load            = int(float(sys_info.freeram) / float(sys_info.totalram) * 100);
+    GetMemoryInfo(&status);
+    status.available_ram = ByteToMB(status.available_ram); //  get the result from bytes to MB
+    // status.available_ram          = ByteToMB((uint64_t)sys_info.freeram * sys_info.mem_unit);
+    status.memory_load            = int(100 - float(status.available_ram) / float(status.installed_physical_ram) * 100);
+
 #endif
     return status;
 }

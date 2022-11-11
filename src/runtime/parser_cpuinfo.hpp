@@ -20,7 +20,12 @@ enum TokenType {
     TOKEN_CPU,
     TOKEN_MHZ,
     TOKEN_MAX,
+    // memory info
+    TOKEN_MEM_AVAILABLE,
+    TOKEN_KB,
+
     TOKEN_ID,
+
     TOKEN_NUMBER,
     TOKEN_INTEGER,
     TOKEN_FLOAT,
@@ -42,4 +47,5 @@ struct Parser {
 
 
 void GetSystemInfo(Runtime::ProcessorStatus *processor_status);
+void GetMemoryInfo(Runtime::MemoryStatus *memory_status);
 #endif

@@ -12,11 +12,13 @@
 #include "./filesystem/fs.hpp"
 #include "./filesystem/network_fs.hpp"
 #include "./runtime/sys_info.hpp"
+#include "runtime/sys_info.h"
 
 static FileSystem::NetworkFS GFS("./tmp");
 
 int main(int argc, char *argv[])
 {
+    Runtime::GetSysMemoryInfo();
     Runtime::GetSysProcessorInfo();
     printf("Hello from Guthi : A framework for distributed application development\n");
 
