@@ -14,36 +14,11 @@
 #include <sys/sysinfo.h>
 #endif
 
-#include <cstdint>
+#include <stdint.h>
 
 namespace Runtime
 {
-struct MemoryStatus
-{
-    uint64_t installed_physical_ram;
-    uint64_t available_ram;
-    uint64_t memory_load;
-    // Information about virtual memory is not required here
-};
 
-struct ProcessorInfo
-{
-    uint32_t processor_number;
-    uint32_t current_mhz;
-    uint32_t total_mhz;
-};
-
-struct ProcessorStatus
-{
-    uint32_t      processor_count;
-    ProcessorInfo processors[64] = {};
-};
-
-MemoryStatus    GetSysMemoryInfo();
-ProcessorStatus GetSysProcessorInfo();
-
-void            LogMemoryStatus(MemoryStatus &memory_status);
-void            LogProcessorStatus(ProcessorStatus &processor_status);
-double          GetCurrentAllCPUUsage();
+#include "sys_info.h"
 
 } // namespace Runtime

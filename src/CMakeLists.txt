@@ -4,10 +4,6 @@ set(SRC "./")
 set(INCLUDE "./include" ${CMAKE_SOURCE_DIR}/src/)
 set(SERIALIZER "./include/serializer")
 
-# set library path
-set (CMAKE_RUNTIME_OUTPUT_DIRECTORY ../${SRC})
-set (CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_RUNTIME_OUTPUT_DIRECTORY})
-
 set(CMAKE_BUILD_TYPE Debug)
 set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
@@ -17,17 +13,16 @@ include_directories(${SERIALIZER})
 file(GLOB FILESYSTEM_SRC ${SRC}filesystem/*.cpp ${SRC}filesystem/*.hpp)
 file(GLOB RUNTIME_SRC ${SRC}runtime/*.cpp ${SRC}runtime/*.hpp)
 file(GLOB EVENT_SRC ${SRC}event/*.cpp)
-file(GLOB CORE_SRC ${SRC}core/*.cpp ${SRC}core/*.hpp)
+file(GLOB CORE_SRC ${SRC}core/error.cpp)
 file(GLOB SHARED_MEM_SRC ${SRC}shared_memory/*.cpp ${SRC}shared_memory/*.h)
-set(CMAKE_CURRENT_BINARY_DIR ${CMAKE_SOURCE_DIR}/binary)
 
 set(SRC_FILES ${SHARED_MEM_SRC} ${CORE_SRC} ${FILESYSTEM_SRC} ${SRC}/filesystem/serialize_fs.cpp ${RUNTIME_SRC})
 add_executable(guthi_exec ${SRC_FILES} ${SRC}/main.cpp)
-add_library(GuthiCore STATIC ${SRC_FILES})
+add_library(GuthiCore STATIC ${SRC_FILES} ${SRC}/core/c_api.cpp)
+
 if(WIN32)
 	target_link_libraries(guthi_exec gdi32 kernel32 user32)
 	target_compile_features(guthi_exec PUBLIC cxx_std_20)
-
 	if(MSVC)
 		target_compile_options(guthi_exec PUBLIC)
 	endif(MSVC)

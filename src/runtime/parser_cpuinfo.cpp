@@ -10,7 +10,8 @@
 constexpr std::string_view keywords[] = {
     "cpu",
     "mhz",
-    "max"
+    "max",
+    "MemAvailable"
 };
 
 static bool is_equal_case_insensitive(std::string_view s1, const std::string_view s2){
@@ -178,21 +179,6 @@ static void parse_maximum_cpu_hz(Parser *parser, Runtime::ProcessorStatus *proce
 } 
 
 void GetSystemInfo(Runtime::ProcessorStatus *processor_status) {
-#if 0
-    int fd = open("/proc/cpuinfo", O_RDONLY);
-    const int size = sysconf(_SC_PAGESIZE);
-    char *content = new char[size + 1];
-    memset(content, 0, size);
-    content[size] = '\0';
-    read(fd, content, 1024);
-
-    Parser parser;
-    parser.is_parsing = true;
-    parser.tokenizer.ptr = content;
-    parse(&parser, processor_status);
-    close(fd);
-    delete content;
-#endif
     FILE *cpu_info = popen("cat /proc/cpuinfo | grep MHz", "r");
     if (!cpu_info) {
         perror("Command execution error");
@@ -224,6 +210,58 @@ void GetSystemInfo(Runtime::ProcessorStatus *processor_status) {
     parse_maximum_cpu_hz(&parser, processor_status);
     pclose(cpu_info);
     free(buffer);
+}
+
+
+
+
+/*
+
+
+    MEMORY UTILITIS FOR LINUX
+
+
+*/
+static void parse_memory_free_space(Parser *parser, Runtime::MemoryStatus *memory_status) {
+    tokenize(&parser->tokenizer);
+    int value = 0;
+    while (parser->is_parsing) {
+        if (acceptToken(parser, TOKEN_MEM_AVAILABLE)) {
+            if (expectToken(parser, TOKEN_COLON)) {
+                value = parser->tokenizer.value;
+                if (expectToken(parser, TOKEN_INTEGER)) {
+                    
+                }
+            }
+        } else if (acceptToken(parser, TOKEN_END)) {
+            break;
+        } else {
+            continue;
+        }
+    }
+    memory_status->available_ram = uint64_t(value) * 1024; 
+    return;
+}
+
+
+void GetMemoryInfo(Runtime::MemoryStatus *memory_status) {
+    FILE *cpu_info = popen("cat /proc/meminfo | grep MemAvailable", "r");
+    if (!cpu_info) {
+        perror("Command execution error");
+    }
+    const int buff_size = 1024;
+    char *buffer = new char[buff_size + 1];
+    memset(buffer, 0, buff_size);
+    buffer[buff_size] = '\0';
+    buffer = new char[buff_size + 1];
+    read(fileno(cpu_info), buffer, buff_size);
+    buffer[buff_size] = '\0';
+
+    Parser parser;
+    parser.is_parsing = true;
+    parser.tokenizer.ptr = buffer;
+    parse_memory_free_space(&parser, memory_status);
+    pclose(cpu_info);
 }
 
 #endif
