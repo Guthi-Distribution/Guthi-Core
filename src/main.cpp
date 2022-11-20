@@ -13,6 +13,8 @@
 #include "./filesystem/network_fs.hpp"
 #include "./runtime/sys_info.hpp"
 #include "runtime/sys_info.h"
+#include "shared_memory/shm.h"
+#include "shared_memory/semaphore.hpp"
 
 static FileSystem::NetworkFS GFS("./tmp");
 
@@ -69,7 +71,10 @@ int main(int argc, char *argv[])
     GFS.local_fs    = *content.get(); // [unsafe], just for test
 
     auto        val = GFS.SerializeLocalFS();
+    
     FileContent deserialized;
+    char* data = (char *)malloc(val.size());
+    safe_memcpy(data, val.size(), val.data(), val.size());
     assert(decltype(GFS)::DeserializeToFileContent(val, deserialized));
     std::cout << "Content after deserialization : \n\n" << deserialized << std::endl;
     std::cout << deserialized.name << std::endl;
@@ -87,5 +92,10 @@ int main(int argc, char *argv[])
     GFS.local_cache.AddFileToCache(rfile, ip);
     assert(GFS.local_cache.RemoveFromCache("CacheTest.exe", ip));
     assert(!GFS.local_cache.RemoveFromCache("CacheTest.exe", ip));
+    SharedMemory shm;
+    Semaphore sem;
+
+    shm.write_data(data, val.size(), 0);
+    getchar();
     return 0;
 }

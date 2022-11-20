@@ -48,21 +48,11 @@ struct ShmSegment {
             }
         }
 
-        void read_data();
-        void write_data(char* data, int position = 0);
-
-        ~SharedMemory() {
-            UnmapViewOfFile(shm_segment);
-            CloseHandle(hnd);
-        }
-    };
 
 #endif
 
-#define SHM_KEY 69
-
-
 #if defined(__gnu_linux__) || defined(__linux__) || defined(linux) || defined(__linux)
+#define SHM_KEY 69
 #include <semaphore.h>
 #include <unistd.h>
 #include <fcntl.h>
@@ -85,12 +75,14 @@ public:
             exit(-1);
         }
         shm_segment = (ShmSegment *)shmat(id, NULL, 0);   
-        if (shm_segment->buff == NULL) {
+        if (shm_segment == NULL) {
             perror("Memory attach error");
         }
     }
 
-    void write_data(const char* data, int position = 0);
+#endif
+
+    void write_data(const char* data, int size = 0, int position = 0);
 
     void read_data();
 
@@ -99,4 +91,3 @@ public:
         shmctl(id, IPC_RMID, NULL);
     }
 };
-#endif

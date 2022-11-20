@@ -22,7 +22,6 @@ std::vector<uint8_t> FileSystem::NetworkFS::SerializeLocalFS() const
     uint32_t written = ser.adapter().writtenBytesCount();
     buffer.resize(written);
 
-    std::cout << "Written count : " << buffer.size() << " " << written << std::endl;
     return buffer;
 }
 
