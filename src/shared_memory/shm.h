@@ -1,3 +1,4 @@
+#pragma once
 #include <cstdio>
 #include <string_view>
 #include <errno.h>
@@ -65,9 +66,9 @@ struct ShmSegment {
 struct SharedMemory {
 private:
     int id; // file descriptor
-    ShmSegment *shm_segment; // memory which will be mapped to shared memory
 
 public:
+    ShmSegment *shm_segment; // memory which will be mapped to shared memory
     SharedMemory() {
         id = shmget(SHM_KEY, SIZE_SHARED_MEM + sizeof(uint16_t), IPC_CREAT | (S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP));
         if (id == -1) {
@@ -84,6 +85,7 @@ public:
 
     void write_data(const char* data, int size = 0, int position = 0);
 
+    //TODO: Don't need this
     void read_data();
 
     ~ SharedMemory() {
