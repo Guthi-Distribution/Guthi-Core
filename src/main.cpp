@@ -1,9 +1,11 @@
 // #include <format> --<> Wait till its support by gcc, clang has already
+#include <cstddef>
 #include <cstdint>
 #include <cstdio>
 #include <cstdlib>
 
 #include <iostream>
+#include <pthread.h>
 #include <thread>
 #include <vector>
 
@@ -13,40 +15,14 @@
 #include "./filesystem/network_fs.hpp"
 #include "./runtime/sys_info.hpp"
 #include "runtime/sys_info.h"
+#include "shared_memory/shm.h"
+#include "shared_memory/semaphore.hpp"
+#include "core/read_sharedmemory.hpp"
 
 static FileSystem::NetworkFS GFS("./tmp");
 
 int main(int argc, char *argv[])
 {
-    Runtime::GetSysMemoryInfo();
-    Runtime::GetSysProcessorInfo();
-    printf("Hello from Guthi : A framework for distributed application development\n");
-
-    Runtime::MemoryStatus status = Runtime::GetSysMemoryInfo();
-    Runtime::LogMemoryStatus(status);
-
-    uint32_t i              = 0;
-
-    float    moving_average = 0.0f;
-
-    while (i++ < 50)
-    {
-        if ((i + 1) % 10 == 0)
-        {
-            std::cout << "Current CPU Usage : " << moving_average << "%" << std::endl;
-            moving_average = 0.0f;
-        }
-        // Runtime::ProcessorStatus processor = Runtime::GetSysProcessorInfo();
-        // Runtime::LogProcessorStatus(processor);
-        else
-        {
-            auto n         = (i + 1) % 10;
-            moving_average = (n-1) * moving_average / n + (Runtime::GetCurrentAllCPUUsage() / n);
-        }
-
-        std::this_thread::sleep_for(chrono::milliseconds(100));
-    }
-
     using namespace FileSystem;
 
     auto content  = std::shared_ptr<FileContent>(new FileContent);
@@ -69,7 +45,10 @@ int main(int argc, char *argv[])
     GFS.local_fs    = *content.get(); // [unsafe], just for test
 
     auto        val = GFS.SerializeLocalFS();
+    
     FileContent deserialized;
+    char* data = (char *)malloc(val.size()); // this data will be sent to shared memory
+    safe_memcpy(data, val.size(), val.data(), val.size());
     assert(decltype(GFS)::DeserializeToFileContent(val, deserialized));
     std::cout << "Content after deserialization : \n\n" << deserialized << std::endl;
     std::cout << deserialized.name << std::endl;
@@ -87,5 +66,14 @@ int main(int argc, char *argv[])
     GFS.local_cache.AddFileToCache(rfile, ip);
     assert(GFS.local_cache.RemoveFromCache("CacheTest.exe", ip));
     assert(!GFS.local_cache.RemoveFromCache("CacheTest.exe", ip));
+    SharedMemory shm;
+    Semaphore sem;
+    info.shm = shm;
+    info.sem = sem;
+    shm.write_data(data, val.size(), 0);
+    pthread_t thread;
+    pthread_create(&thread, NULL, read_shm, NULL);
+    pthread_join(thread, NULL);
+    // getchar();
     return 0;
 }

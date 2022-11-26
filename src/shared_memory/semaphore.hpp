@@ -1,3 +1,4 @@
+#pragma once
 #include "core/error.hpp"
 
 // forward declaration of semaphore structure
