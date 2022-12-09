@@ -1,0 +1,1 @@
+"C:\Program Files\CMake\bin\cmake.EXE" --no-warn-unused-cli -DCMAKE_EXPORT_COMPILE_COMMANDS:BOOL=TRUE -DCMAKE_BUILD_TYPE:STRING=Debug -DCMAKE_C_COMPILER:FILEPATH=C:\TDM-GCC-64\bin\gcc.exe -DCMAKE_CXX_COMPILER:FILEPATH=C:\TDM-GCC-64\bin\g++.exe -Sd:/Projects/Major/Guthi -Bd:/Projects/Major/Guthi/build -G"Unix Makefiles"

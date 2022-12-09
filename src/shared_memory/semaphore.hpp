@@ -17,12 +17,11 @@ enum SemaphoreResult {
 #ifdef _WIN32
 #include <Windows.h>
 
-const char* sem_name = "guthi_semaphore";
 struct Semaphore {
     HANDLE semHnd;
 
     Semaphore() {
-        semHnd = CreateSemaphore(NULL, 1, 1, sem_name);
+        semHnd = CreateSemaphore(NULL, 1, 1, "guthi_semaphore");
         if (semHnd == NULL) {
             print_error("Semaphore creation error, error code");
             return;
