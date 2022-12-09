@@ -1,6 +1,6 @@
 #include "error.hpp"
 
-#ifdef _MSC_VER
+#ifdef _WIN32
 void print_error(const char* message) {
     char *error_message_buff;
     DWORD dw = GetLastError();

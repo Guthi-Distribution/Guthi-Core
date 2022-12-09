@@ -14,7 +14,7 @@ enum SemaphoreResult {
     SEM_ERROR
 };
 
-#ifdef _MSC_VER
+#ifdef _WIN32
 #include <Windows.h>
 
 const char* sem_name = "guthi_semaphore";
