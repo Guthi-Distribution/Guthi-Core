@@ -1,7 +1,6 @@
 #pragma once
 #include <cstddef>
 #include <cstdint>
-#include <error.h>
 #include <iostream>
 #include <shared_memory/shm.h>
 #include <shared_memory/semaphore.hpp>

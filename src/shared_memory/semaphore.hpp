@@ -22,7 +22,7 @@ struct Semaphore {
     HANDLE semHnd;
 
     Semaphore() {
-        semHnd = OpenSemaphore(SEMAPHORE_ALL_ACCESS, 0, sem_name);
+        semHnd = CreateSemaphore(NULL, 1, 1, sem_name);
         if (semHnd == NULL) {
             print_error("Semaphore creation error, error code");
             return;

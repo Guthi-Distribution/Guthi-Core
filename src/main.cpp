@@ -5,7 +5,6 @@
 #include <cstdlib>
 
 #include <iostream>
-#include <pthread.h>
 #include <thread>
 #include <vector>
 
@@ -23,6 +22,7 @@ static FileSystem::NetworkFS GFS("./tmp");
 
 int main(int argc, char *argv[])
 {
+#if 0
     using namespace FileSystem;
 
     auto content  = std::shared_ptr<FileContent>(new FileContent);
@@ -76,4 +76,9 @@ int main(int argc, char *argv[])
     pthread_join(thread, NULL);
     // getchar();
     return 0;
+#endif
+
+    SharedMemory memory;
+    memory.write_data("Hello there");
+    getchar();
 }

@@ -14,7 +14,7 @@ void *GetLocalFileMetadata(void *size) {
     auto ptr = malloc(sizeof(uint8_t) * ser.size());
     uint32_t* size_ptr = (uint32_t *)size;
     *size_ptr    = (uint32_t)ser.size();
-    safe_memcpy(ptr, *size, ser.data(), ser.size());
+    //safe_memcpy(ptr, *size, ser.data(), ser.size());
     return ptr;
 }
 
