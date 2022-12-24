@@ -1,4 +1,4 @@
-#include "shm.h"
+#include "./shm.h"
 #include "filesystem/fs.hpp"
 
 void SharedMemory::read_data() {

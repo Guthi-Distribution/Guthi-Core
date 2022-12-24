@@ -20,7 +20,7 @@ struct ShmSegment {
 };
 
 
-#ifdef _MSC_VER
+#ifdef _WIN32 
 #include <Windows.h>
 
     struct SharedMemory {
@@ -31,9 +31,12 @@ struct ShmSegment {
         ShmSegment* shm_segment;
 
         SharedMemory() {
-            hnd = OpenFileMapping(
-                FILE_MAP_ALL_ACCESS,   // read/write access
-                FALSE,
+            hnd = CreateFileMapping(
+                INVALID_HANDLE_VALUE,
+                NULL,
+                PAGE_READWRITE,
+                0,
+                4100,
                 "Guthi_Shared_memory"
             );
             if (hnd == NULL) {
@@ -49,10 +52,18 @@ struct ShmSegment {
             }
         }
 
+        ~SharedMemory() {
+            UnmapViewOfFile(shm_segment);
+            CloseHandle(hnd);
+        }
+		
+		void write_data(const char* data, int size = 0, int position = 0);
 
-#endif
+		void read_data();
+	};
 
-#if defined(__gnu_linux__) || defined(__linux__) || defined(linux) || defined(__linux)
+#else 
+
 #define SHM_KEY 69
 #include <semaphore.h>
 #include <unistd.h>
@@ -80,16 +91,14 @@ public:
             perror("Memory attach error");
         }
     }
+	
+	void write_data(const char* data, int size = 0, int position = 0);
+	void read_data();
 
-#endif
-
-    void write_data(const char* data, int size = 0, int position = 0);
-
-    //TODO: Don't need this
-    void read_data();
-
-    ~ SharedMemory() {
-        shmdt((const void *)shm_segment);
+    ~SharedMemory() {
+        shmdt((const void*)shm_segment);
         shmctl(id, IPC_RMID, NULL);
     }
 };
+
+#endif

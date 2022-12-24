@@ -101,8 +101,10 @@ ProcessorStatus GetSysProcessorInfo()
     GetSystemInfo(&sys_info);
     processor_status.processor_count = sys_info.dwNumberOfProcessors;
 
+
     auto power_info                  = std::unique_ptr<PROCESSOR_POWER_INFORMATION[]>(
         new PROCESSOR_POWER_INFORMATION[processor_status.processor_count]);
+#ifdef _MSC_VER
     auto result = CallNtPowerInformation(NT_PROCESSOR_INFO, nullptr, 0, power_info.get(),
                                          sizeof(PROCESSOR_POWER_INFORMATION) * processor_status.processor_count);
 
@@ -111,13 +113,14 @@ ProcessorStatus GetSysProcessorInfo()
         fprintf(stderr, "PowerStatusInformation Hazard \nError : %x.", result);
         exit(0);
     }
-
+#endif
     for (uint32_t pro = 0; pro < processor_status.processor_count; ++pro)
     {
         processor_status.processors[pro].processor_number = power_info.get()[pro].Number;
         processor_status.processors[pro].total_mhz        = power_info.get()[pro].MaxMhz;
         processor_status.processors[pro].current_mhz      = power_info.get()[pro].CurrentMhz;
     }
+
 #else
 // #error "Processor Status info not implemented for other OS except Win32"
     GetSystemInfo(&processor_status);
