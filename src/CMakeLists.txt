@@ -21,10 +21,10 @@ set(SRC_FILES ${SHARED_MEM_SRC} ${CORE_SRC} ${FILESYSTEM_SRC} ${SRC}/filesystem/
 
 if(WIN32)
 	add_executable(guthi_exec ${SRC_FILES} ${SRC}/main.cpp )
-	add_library(GuthiCore STATIC ${SRC_FILES} ${SRC}/core/c_api.cpp )
+	add_library(GuthiCore_windows STATIC ${SRC_FILES} ${SRC}/core/c_api.cpp )
 
 	target_link_libraries(guthi_exec gdi32 kernel32 user32 pdh)
-	target_link_libraries(GuthiCore gdi32 kernel32 user32 pdh)
+	target_link_libraries(GuthiCore_windows gdi32 kernel32 user32 pdh)
 	
 	target_compile_features(guthi_exec PUBLIC cxx_std_20)
 
@@ -34,10 +34,9 @@ if(WIN32)
 endif(WIN32)
 
 if(UNIX)
-	# add_executable(guthi_exec ${SRC}/main.cpp ${FILESYSTEM_SRC} ${CORE_SRC} ${EVENT_SRC} ${SRC}/filesystem/cache.cpp  ${SRC}/filesystem/serialize_fs.cpp ${RUNTIME_SRC})
-	target_link_libraries(guthi_exec pthread dl m)
 	add_executable(guthi_exec ${SRC_FILES} ${SRC}/main.cpp)
-add_library(GuthiCore STATIC ${SRC_FILES} ${SRC}/core/c_api.cpp)
+	target_link_libraries(guthi_exec pthread dl m)
+	add_library(GuthiCore STATIC ${SRC_FILES} ${SRC}/core/c_api.cpp)
 
 	# set(CMAKE_CXX_FLAGS "-fsanitize=address")
 endif(UNIX)

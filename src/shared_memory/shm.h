@@ -100,4 +100,5 @@ public:
         shmctl(id, IPC_RMID, NULL);
     }
 };
+
 #endif
