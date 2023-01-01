@@ -30,34 +30,46 @@ struct SharedMemory
   public:
     ShmSegment *shm_segment;
 
-    SharedMemory()
-    {
-        hnd = OpenFileMapping(FILE_MAP_ALL_ACCESS, // read/write access
-                              FALSE, "Guthi_Shared_memory");
-        if (hnd == NULL)
-        {
-            print_error("File mapping creation error\n");
-            return;
+        SharedMemory() {
+            hnd = CreateFileMapping(
+                INVALID_HANDLE_VALUE,
+                NULL,
+                PAGE_READWRITE,
+                0,
+                4100,
+                "Guthi_Shared_memory"
+            );
+            if (hnd == NULL) {
+                print_error("File mapping creation error\n");
+                return;
+            }
+
+            shm_segment = (ShmSegment*)MapViewOfFile(hnd, FILE_MAP_ALL_ACCESS, 0, 0, sizeof(ShmSegment));
+            if (shm_segment == NULL) {
+                print_error("Map View of File error\n");
+                CloseHandle(hnd);
+                return; 
+            }
         }
 
-        shm_segment = (ShmSegment *)MapViewOfFile(hnd, FILE_MAP_ALL_ACCESS, 0, 0, sizeof(ShmSegment));
-        if (shm_segment == NULL)
-        {
-            print_error("Map View of File error\n");
+        ~SharedMemory() {
+            UnmapViewOfFile(shm_segment);
             CloseHandle(hnd);
-            return;
         }
-    }
 
     ~SharedMemory()
     {
         UnmapViewOfFile(reinterpret_cast<void *>(shm_segment));
         CloseHandle(hnd);
     }
+		
+		void write_data(const char* data, int size = 0, int position = 0);
 
-#endif
+		void read_data();
+	};
 
-#if defined(__gnu_linux__) || defined(__linux__) || defined(linux) || defined(__linux)
+#else 
+
 #define SHM_KEY 69
 #include <semaphore.h>
 #include <unistd.h>
@@ -71,33 +83,27 @@ struct SharedMemory
       private:
         int id; // file descriptor
 
-      public:
-        ShmSegment *shm_segment; // memory which will be mapped to shared memory
-        SharedMemory()
-        {
-            id = shmget(SHM_KEY, SIZE_SHARED_MEM + sizeof(uint16_t),
-                        IPC_CREAT | (S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP));
-            if (id == -1)
-            {
-                perror("Shared Memory Creation error");
-                exit(-1);
-            }
-            shm_segment = (ShmSegment *)shmat(id, NULL, 0);
-            if (shm_segment == NULL)
-            {
-                perror("Memory attach error");
-            }
+public:
+    ShmSegment *shm_segment; // memory which will be mapped to shared memory
+    SharedMemory() {
+        id = shmget(SHM_KEY, SIZE_SHARED_MEM + sizeof(uint16_t), IPC_CREAT | (S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP));
+        if (id == -1) {
+            perror("Shared Memory Creation error");
+            exit(-1);
         }
-        ~SharedMemory()
-        {
-            shmdt((const void *)shm_segment);
-            shmctl(id, IPC_RMID, NULL);
+        shm_segment = (ShmSegment *)shmat(id, NULL, 0);   
+        if (shm_segment == NULL) {
+            perror("Memory attach error");
         }
+    }
+	
+	void write_data(const char* data, int size = 0, int position = 0);
+	void read_data();
+
+    ~SharedMemory() {
+        shmdt((const void*)shm_segment);
+        shmctl(id, IPC_RMID, NULL);
+    }
+};
 
 #endif
-
-        void write_data(const char *data, int size = 0, int position = 0);
-
-        // TODO: Don't need this
-        void read_data();
-    };
