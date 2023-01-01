@@ -1,0 +1,4 @@
+hello notification
+Is it working correctly? Yes, async.
+
+File change tracked without freezing the OS. Well that worked.

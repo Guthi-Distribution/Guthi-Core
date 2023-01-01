@@ -173,6 +173,24 @@ inline std::shared_ptr<FileContent> MergeTotalFileContent(std::vector<std::share
     return dfs;
 }
 
+inline void AddAsChildDirectory(FileContent &root, std::vector<std::shared_ptr<FileContent>> &new_addition)
+{
+    for (auto const &new_dir : new_addition)
+    {
+        auto iter = std::find_if(root.contents.begin(), root.contents.end(),
+                                 [&](const auto &f1) { return f1->name == new_dir->name; });
+
+        if (iter == root.contents.end())
+        {
+            root.contents.push_back(new_dir);
+        }
+        else
+        {
+            MergeSingleFileContent(*iter, new_dir);
+        }
+    }
+}
+
 struct NetworkFS
 {
     // Only the file structure need to be transferred across to form the view of complete filesystem
@@ -180,6 +198,7 @@ struct NetworkFS
     //          -- Merging of folders with same name
     //          -- Querying for file independent of the nodes in which its present
     // Learn to merge FileContent from multiple nodes to provide coherent view
+
     FileContent GFS_root;
     FileContent local_fs;
     FileCache   local_cache;
@@ -189,22 +208,19 @@ struct NetworkFS
     }
 
     std::vector<uint8_t> SerializeLocalFS() const;
+    static bool DeserializeToFileContent(std::vector<uint8_t> &data, FileContent &content);
 
-    bool                 SyncGFS()
+    bool MergeDiff(std::shared_ptr<FileContent>& in_content)
     {
-        return false;
-    }
+        std::vector<std::shared_ptr<FileContent>> add_content; 
+        add_content.push_back(in_content); 
 
-    bool MergeDiff()
-    {
-        return false;
+        AddAsChildDirectory(GFS_root, add_content);
     }
 
     FileContent &GetRoot()
     {
         return GFS_root;
     }
-
-    static bool DeserializeToFileContent(std::vector<uint8_t> &data, FileContent &content);
 };
 } // namespace FileSystem
