@@ -216,6 +216,8 @@ struct NetworkFS
         add_content.push_back(in_content); 
 
         AddAsChildDirectory(GFS_root, add_content);
+
+        return true; // Warnings are buried within msvc's shitty output. 
     }
 
     FileContent &GetRoot()

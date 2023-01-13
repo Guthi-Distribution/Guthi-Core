@@ -29,7 +29,11 @@ enum class TrackFor : uint8_t
     WriteChange = 8,
 };
 
-static HANDLE dir_handle;
+#if defined(_WIN32)
+using TrackHandle = HANDLE;
+#elif defined(__linux__)
+using TrackHandle = int;
+#endif
 
 #define TestEnum(var, val) (uint8_t) var &(uint8_t) decltype(var)::val
 // This code is strictly for win32
@@ -48,13 +52,20 @@ struct FileTracker
     // Unorderd map is quite slow, but meh
     // Optionally include tracking filter for respective directory, but we omit that for now
     // Map from name of handle of the directory to its information
-    std::unordered_map<HANDLE, DirectoryTrackInfo> tracked_directory;
+    std::unordered_map<TrackHandle, DirectoryTrackInfo> tracked_directory;
+#if defined(_WIN32)
     // A mapping from directory name to its handle
-    std::unordered_map<DirectoryPath, HANDLE> name_to_handle;
-    // I guess, we require a map that maps from directory to all files that are tracked within
-    // else, every changes will be reported
-    std::unordered_map<HANDLE, std::vector<DirectoryPath>>
+    std::unordered_map<DirectoryPath, TrackHandle> name_to_handle;
+    // I guess, we require a map that maps from directory to all files that are
+    // tracked within else, every changes will be reported
+    std::unordered_map<TrackHandle, std::vector<DirectoryPath>>
         files_tracked_within_directory; // map from handle to the directory
+#elif defined(__linux__)
+    std::unordered_map<DirectoryPath, TrackHandle> name_to_dir_handle;
+    std::unordered_map<std::string, TrackHandle>   name_to_file_handle;
+    std::unordered_map<TrackHandle, std::string>   handle_to_file_name;
+    // if this much information should be okish to track file
+#endif
 
     struct ChangeInfo
     {
@@ -79,4 +90,8 @@ struct FileTracker
   private:
     // signal to stop tracking files
     std::atomic<bool> stop_listening = false;
+
+#if defined(__linux__)
+    int inotify_handle;
+#endif
 };

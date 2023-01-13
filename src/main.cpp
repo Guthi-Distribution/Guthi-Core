@@ -24,7 +24,6 @@ static FileSystem::NetworkFS GFS("./tmp");
 
 int                          main(int argc, char *argv[])
 {
-#if 0
     using namespace FileSystem;
 
     auto content  = std::shared_ptr<FileContent>(new FileContent);
@@ -85,7 +84,7 @@ int                          main(int argc, char *argv[])
     // 
     // As ran from GuthiCore/build/guthi_exec.exe
     FileContent test;
-    test.name = "../src/text.txt";
+    test.name = "../src/test.txt";
     FileTracker tracker;
     tracker.TrackFile(test, TrackFor::WriteChange);
 
@@ -93,16 +92,15 @@ int                          main(int argc, char *argv[])
     std::thread tracking_thread(&FileTracker::ListenForChanges, &tracker, 0);
 
     using namespace std::chrono_literals;
-    std::this_thread::sleep_for(5000ms);
+    std::this_thread::sleep_for(15000ms);
     tracker.StopListening();
 
     if (tracking_thread.joinable())
         tracking_thread.join();
 
     return 0;
-#endif
 
-    SharedMemory memory;
-    memory.write_data("Hello there");
-    getchar();
+    //SharedMemory memory;
+    //memory.write_data("Hello there");
+    //getchar();
 }

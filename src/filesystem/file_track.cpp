@@ -1,3 +1,8 @@
+// lol
+// TODO :: Modify CMakeLists.txt to accomodate for this
+
+#if defined(_WIN32)
+
 #include "./filesystem/file_track.hpp"
 
 void FileTracker::TrackFolder(FileSystem::FileContent &folder, TrackFor track_option, bool track_recursively)
@@ -258,3 +263,5 @@ void FileTracker::ListenForChanges(uint32_t timeout)
     delete[] completed;
     delete[] read_buffer;
 }
+
+#endif

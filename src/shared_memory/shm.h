@@ -52,10 +52,6 @@ struct SharedMemory
             }
         }
 
-        ~SharedMemory() {
-            UnmapViewOfFile(shm_segment);
-            CloseHandle(hnd);
-        }
 
     ~SharedMemory()
     {
