@@ -4,6 +4,8 @@
 #if defined(_WIN32)
 
 #include "./filesystem/file_track.hpp"
+#include <chrono> 
+#include <thread> 
 
 void FileTracker::TrackFolder(FileSystem::FileContent &folder, TrackFor track_option, bool track_recursively)
 {

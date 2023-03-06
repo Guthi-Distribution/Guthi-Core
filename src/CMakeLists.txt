@@ -20,8 +20,10 @@ link_directories(${CMAKE_SOURCE_DIR}/lib)
 set(SRC_FILES ${SHARED_MEM_SRC} ${CORE_SRC} ${FILESYSTEM_SRC} ${SRC}/filesystem/serialize_fs.cpp ${RUNTIME_SRC})
 
 if(WIN32)
-	add_executable(guthi_exec ${SRC_FILES} ${SRC}/main.cpp )
-	add_library(GuthiCore_windows STATIC ${SRC_FILES} ${SRC}/core/c_api.cpp )
+	add_executable(guthi_exec ${SRC_FILES} ${SRC}/main.cpp  "filesystem/file_track_linux.cpp")
+	add_executable(runtime_daemon "daemon/win32_pipe.cpp" "daemon/runtime.cpp" "daemon/daemon_lib.cpp")
+	add_library(GuthiCore_windows STATIC ${SRC_FILES} ${SRC}/core/c_api.cpp  "filesystem/file_track_linux.cpp")
+	add_library(runtime_lib  "daemon/win32_pipe.cpp" "daemon/daemon_lib.cpp" "daemon/runtime_client.cpp")
 
 	target_link_libraries(guthi_exec gdi32 kernel32 user32 pdh)
 	target_link_libraries(GuthiCore_windows gdi32 kernel32 user32 pdh)
