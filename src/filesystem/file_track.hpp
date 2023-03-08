@@ -11,7 +11,7 @@
 #ifdef _WIN32
 #include <Windows.h>
 #else
-#error "File tracking not implemented for OS other than windows"
+// #error "File tracking not implemented for OS other than windows"
 #endif
 
 // TODO :: Use overlapped event to convert this code to asynchronous calls
@@ -54,6 +54,7 @@ struct FileTracker
     // Map from name of handle of the directory to its information
     std::unordered_map<TrackHandle, DirectoryTrackInfo> tracked_directory;
 #if defined(_WIN32)
+    FileTracker() = default;
     // A mapping from directory name to its handle
     std::unordered_map<DirectoryPath, TrackHandle> name_to_handle;
     // I guess, we require a map that maps from directory to all files that are
@@ -61,6 +62,7 @@ struct FileTracker
     std::unordered_map<TrackHandle, std::vector<DirectoryPath>>
         files_tracked_within_directory; // map from handle to the directory
 #elif defined(__linux__)
+    FileTracker();
     std::unordered_map<DirectoryPath, TrackHandle> name_to_dir_handle;
     std::unordered_map<std::string, TrackHandle>   name_to_file_handle;
     std::unordered_map<TrackHandle, std::string>   handle_to_file_name;
