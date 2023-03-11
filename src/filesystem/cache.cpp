@@ -56,7 +56,8 @@ void FileCache::AddFileToCache(RawFile &file, uint8_t ip_addr[4])
 
         if (!fp)
         {
-            exit(-1);
+            perror("File Creation error");
+            return ;
         }
         fwrite(file.data, sizeof(*file.data), file.file_size, fp);
         fclose(fp);
