@@ -1,6 +1,10 @@
 #include "./pipe.hpp"
 #include <Windows.h>
 #include <cstdio>
+#include <cassert>
+
+
+constexpr const char* service_name = "GuthiService"; 
 
 void DumpWin32ErrorMessage(const char *operation)
 {
@@ -33,13 +37,13 @@ void *ConnectAsClient()
     HANDLE pipe = CreateFile(GUTHI_PIPE_NAME, GENERIC_READ | GENERIC_WRITE, 0, NULL, OPEN_EXISTING, 0, NULL);
     if (pipe == INVALID_HANDLE_VALUE)
     {
-        fprintf(stderr, "Cannot open named pipe as a client \n");
+	DumpWin32ErrorMessage("OpeningNamedFile() failed\n"); 
         exit(-5);
     }
     return pipe;
 }
 
-uint32_t WriteMessage(void *hnd, uint8_t *msg, uint32_t len)
+uint32_t WriteMessage(void *hnd, const uint8_t *msg, uint32_t len)
 {
     DWORD  bytes_written = 0;
     HANDLE handle        = (HANDLE)hnd;
@@ -58,4 +62,54 @@ uint32_t ReadMessage(void *hnd, uint8_t *msg, uint32_t max_allowed_read)
     // Reason of failing
     DumpWin32ErrorMessage("ReadMessage() failed ");
     return 0;
+}
+
+Handle WaitForConnection(void* hnd) {
+	HANDLE handle = (HANDLE) hnd; 
+	ConnectNamedPipe(handle, NULL); 
+	return hnd; 
+}
+
+void CreateDaemonProcess(int argc, char* arg[]) { 
+	char self_name[512] = {}; 
+	for (uint32_t i = 0; i < argc; ++i) {
+		fprintf(stderr, "%d -> %s\n",i,arg[i]); 
+	}
+	assert(GetModuleFileName(NULL, self_name, 512)!=512);
+        fprintf(stderr, "Module loaded : %s.",self_name); 
+	
+	if (argc != 1 || strcmp(arg[0], "--daemon")) {
+		PROCESS_INFORMATION process_info = {}; 
+		STARTUPINFO startup_info = {}; 
+		startup_info.cb = sizeof(startup_info); 
+	
+		char arguments[512] = "--daemon"; 
+		bool process_created = CreateProcess(
+			self_name, 
+			arguments,
+			NULL, // security context 
+			NULL, 
+			FALSE, 
+			DETACHED_PROCESS, // Specify detached mode 
+			NULL, 
+			NULL, 
+			&startup_info, 
+			&process_info); 
+		if (!process_created) {
+			DumpWin32ErrorMessage("CreateProcess() failed : "); 
+			exit(-5); 
+		}
+		fprintf(stderr, "Daemon launched successfully"); 
+		exit(EXIT_SUCCESS); 
+	}
+}
+
+Handle LaunchAsDaemon(int argc, char* argv[]) {
+	CreateDaemonProcess(argc, argv); 
+
+	PipeDesc pipe_desc = {}; 
+	pipe_desc.in_buffer_size = 1024; 
+	pipe_desc.out_buffer_size = 1024; 
+	pipe_desc.mode = PipeMode::Duplex; 
+	return InitProcessCommunication(pipe_desc); 
 }
