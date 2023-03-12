@@ -7,6 +7,7 @@
 #include <atomic>
 #include <unordered_map>
 #include <queue>
+#include <mutex> 
 
 #ifdef _WIN32
 #include <Windows.h>
@@ -76,9 +77,7 @@ struct FileTracker
         TrackFor      result;
     };
 
-    /*
     std::mutex             queue_lock;
-    */
     std::queue<ChangeInfo> change_info;
 
     void                   TrackFile(FileSystem::FileContent &file, TrackFor track_option);
@@ -88,7 +87,18 @@ struct FileTracker
     {
         stop_listening = true;
     }
-
+    bool TryPopChangeInfo(ChangeInfo &info)
+    {
+        std::unique_lock  l(queue_lock); 
+        if (!change_info.empty())
+        {
+            info = change_info.front(); 
+            change_info.pop(); 
+            fprintf(stderr, "\n\nChange info propagated\n\n");
+            return true; 
+        }
+        return false; 
+    }
   private:
     // signal to stop tracking files
     std::atomic<bool> stop_listening = false;

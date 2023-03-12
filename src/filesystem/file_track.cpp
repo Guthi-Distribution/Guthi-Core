@@ -3,7 +3,7 @@
 
 #if defined(_WIN32)
 
-#include "./filesystem/file_track.hpp"
+#include "./file_track.hpp"
 #include <chrono> 
 #include <thread> 
 
@@ -52,7 +52,7 @@ void FileTracker::TrackFile(FileSystem::FileContent &file, TrackFor track_option
     DWORD       len = GetFullPathNameA(file.name.c_str(), 512, path.data(), nullptr);
     path.resize(len);
 
-    fprintf(stdout, "Obtained full path %d : %s.", len, path.c_str());
+    fprintf(stdout, "\nFSTracLog : Obtained full path %d : %s.", len, path.c_str());
 
     auto        last_pos = path.find_last_of('\\');
     std::string dir;
@@ -68,7 +68,7 @@ void FileTracker::TrackFile(FileSystem::FileContent &file, TrackFor track_option
         exit(-1);
     }
 
-    fprintf(stderr, "Path extracted : %s.", dir.c_str());
+    fprintf(stderr, "\nFSTracLog : Path extracted : %s.", dir.c_str());
     // TODO :: Complete the filter criteria list
     DWORD filter = 0;
     if (TestEnum(track_option, NameChange))
@@ -115,6 +115,8 @@ void FileTracker::TrackFile(FileSystem::FileContent &file, TrackFor track_option
         exit(-2);
     }
 
+    // Directory has been tracked but file hasn't been added to it,so add it now 
+    files_tracked_within_directory.insert({dir_handle, std::vector{file_name}});
     tracked_directory.insert(std::pair{dir_handle, DirectoryTrackInfo(true, false, dir)});
     name_to_handle.insert(std::pair{dir, dir_handle});
 }
@@ -175,7 +177,7 @@ void FileTracker::ListenForChanges(uint32_t timeout)
 
         DWORD bytes_read = 0;
 
-        while (true)
+        while (!stop_listening.load(std::memory_order_relaxed))
         {
             uint32_t j        = 0;
             bool     relisten = false;
@@ -213,6 +215,7 @@ void FileTracker::ListenForChanges(uint32_t timeout)
                             info.file      = file_name;
                             info.directory = handle_info.dir_name;
                             info.result    = TrackFor::WriteChange; // Fixed for now
+                            std::unique_lock l(queue_lock); 
                             change_info.push(std::move(info));
                         }
                         else
@@ -230,6 +233,7 @@ void FileTracker::ListenForChanges(uint32_t timeout)
                                     info.file      = file_name;
                                     info.directory = handle_info.dir_name;
                                     info.result    = TrackFor::WriteChange; // Fixed for now
+                                    std::unique_lock l(queue_lock); 
                                     change_info.push(std::move(info));
                                 }
                                 // else the file isn't tracked

@@ -1,8 +1,8 @@
-#include "./pipe.hpp"
 #include <Windows.h>
 #include <cstdio>
 #include <cassert>
 
+#include "./pipe.hpp"
 
 constexpr const char* service_name = "GuthiService"; 
 
@@ -51,6 +51,7 @@ uint32_t WriteMessage(void *hnd, const uint8_t *msg, uint32_t len)
     return (uint32_t)bytes_written;
 }
 
+// TODO :: Make it signed and implement Peeking Named Pipe 
 uint32_t ReadMessage(void *hnd, uint8_t *msg, uint32_t max_allowed_read)
 {
     HANDLE handle     = (HANDLE)hnd;
@@ -105,7 +106,7 @@ void CreateDaemonProcess(int argc, char* arg[]) {
 }
 
 Handle LaunchAsDaemon(int argc, char* argv[]) {
-	CreateDaemonProcess(argc, argv); 
+//	CreateDaemonProcess(argc, argv); 
 
 	PipeDesc pipe_desc = {}; 
 	pipe_desc.in_buffer_size = 1024; 
@@ -113,3 +114,22 @@ Handle LaunchAsDaemon(int argc, char* argv[]) {
 	pipe_desc.mode = PipeMode::Duplex; 
 	return InitProcessCommunication(pipe_desc); 
 }
+
+// Integrate with the filesystem to get information about the tracked files and folders 
+int32_t ReadNonBlocking(Handle hnd, uint8_t* msg, uint32_t max_read_allowed) {
+	DWORD bytes_available = 0;
+	HANDLE handle = (HANDLE) hnd; 
+	if (!PeekNamedPipe(hnd, nullptr, 0,nullptr, &bytes_available, nullptr))
+	{
+	       fprintf(stderr, "Failed to connect with pipe"); 
+	       return -1; 
+	}
+
+	if (!bytes_available) {
+		return 0; 
+	}
+
+	uint32_t to_read = max_read_allowed < bytes_available ? max_read_allowed : bytes_available; 
+ 	return	ReadMessage(hnd, msg, to_read); 
+}
+
