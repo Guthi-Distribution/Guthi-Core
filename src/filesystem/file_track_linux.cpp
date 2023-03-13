@@ -145,6 +145,7 @@ void FileTracker::ListenForChanges(uint32_t timeout)
                         info.file      = file_name;
                         info.directory = {};
                         info.result    = TrackFor::WriteChange;
+                        std::unique_lock l(queue_lock);
                         change_info.push(std::move(info));
                     }
 
@@ -164,6 +165,7 @@ void FileTracker::ListenForChanges(uint32_t timeout)
                             info.file      = {};
                             info.directory = (*dir_iter).second.dir_name;
                             info.result    = TrackFor::WriteChange; // Default option
+                            std::unique_lock l(queue_lock);
                             change_info.push(std::move(info));
                         }
                     }
@@ -175,7 +177,6 @@ void FileTracker::ListenForChanges(uint32_t timeout)
             }
 
             pos = sizeof(*event) + event->len;
-            fprintf(stderr, "inside loop");
         }
     }
 }

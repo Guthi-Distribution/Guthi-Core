@@ -79,6 +79,8 @@ struct FileTracker
 
     std::mutex             queue_lock;
     std::queue<ChangeInfo> change_info;
+    std::mutex             tracker_lock;// Lock for adding new file 
+    std::atomic_bool       reset_tracking; 
 
     void                   TrackFile(FileSystem::FileContent &file, TrackFor track_option);
     void                   TrackFolder(FileSystem::FileContent &folder, TrackFor track_option, bool track_recursively);

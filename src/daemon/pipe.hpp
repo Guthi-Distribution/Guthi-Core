@@ -47,3 +47,10 @@ Handle WaitForConnection(Handle );
 Handle LaunchAsDaemon(int argc,char *argv[]);
 void DaemonMainEntry(); 
 
+#if defined(_WIN32)
+#include <windows.h>
+#define sleep(x) Sleep((x) * 1000)
+#else
+#include <unistd.h>
+#define sleep(x) sleep(x)
+#endif

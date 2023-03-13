@@ -4,8 +4,8 @@
 #if defined(_WIN32)
 
 #include "./file_track.hpp"
-#include <chrono> 
-#include <thread> 
+#include <chrono>
+#include <thread>
 
 void FileTracker::TrackFolder(FileSystem::FileContent &folder, TrackFor track_option, bool track_recursively)
 {
@@ -89,6 +89,7 @@ void FileTracker::TrackFile(FileSystem::FileContent &file, TrackFor track_option
 
     if (it != name_to_handle.end())
     {
+        std::unique_lock l(tracker_lock);
         // Directory has already been tracked
         if (auto new_iter = files_tracked_within_directory.find((*it).second);
             new_iter != files_tracked_within_directory.end())
@@ -99,6 +100,7 @@ void FileTracker::TrackFile(FileSystem::FileContent &file, TrackFor track_option
         {
             files_tracked_within_directory.insert(std::pair{(*it).second, std::vector{file_name}});
         }
+        reset_tracking = true;
         return;
     }
 
@@ -115,10 +117,12 @@ void FileTracker::TrackFile(FileSystem::FileContent &file, TrackFor track_option
         exit(-2);
     }
 
-    // Directory has been tracked but file hasn't been added to it,so add it now 
+    std::unique_lock l(tracker_lock);
+    // Directory has been tracked but file hasn't been added to it,so add it now
     files_tracked_within_directory.insert({dir_handle, std::vector{file_name}});
     tracked_directory.insert(std::pair{dir_handle, DirectoryTrackInfo(true, false, dir)});
     name_to_handle.insert(std::pair{dir, dir_handle});
+    reset_tracking = true;
 }
 
 void FileTracker::ListenForChanges(uint32_t timeout)
@@ -130,32 +134,54 @@ void FileTracker::ListenForChanges(uint32_t timeout)
         char buffer[1024] = {};
     };
 
-    const uint32_t     dir_count   = tracked_directory.size();
+    HANDLE            *events       = nullptr;
+    constexpr uint32_t buffer_size  = 1024;
 
-    HANDLE            *events      = nullptr;
-    constexpr uint32_t buffer_size = 1024;
+    OVERLAPPED        *overlap      = nullptr;
+    Buffer            *read_buffer  = nullptr;
+    bool              *completed    = nullptr;
 
-    OVERLAPPED        *overlap     = nullptr;
-    Buffer            *read_buffer = nullptr;
-    bool              *completed   = nullptr;
-    if (dir_count > 0)
-    {
-        events    = new HANDLE[dir_count];
-        overlap   = new OVERLAPPED[dir_count];
-        completed = new bool[dir_count];
+    reset_tracking                  = true;
 
-        for (uint32_t j = 0; j < dir_count; ++j)
-        {
-            overlap[j]        = {};
-            events[j]         = CreateEvent(NULL, TRUE, FALSE, NULL);
-            overlap[j].hEvent = events[j];
-            completed[j]      = true;
-        }
-        read_buffer = new Buffer[dir_count];
-    }
+    uint32_t tracked_directory_size = 0;
 
     while (!stop_listening.load(std::memory_order_relaxed))
     {
+        if (reset_tracking.load())
+        {
+            // Cleanup phase
+            delete[] events;
+            delete[] overlap;
+            delete[] completed;
+            delete[] read_buffer;
+
+            // Reallocate
+            uint32_t dir_count = 0;
+            {
+                std::unique_lock l(tracker_lock);
+                dir_count = tracked_directory.size();
+            }
+
+            fprintf(stderr, "FSTrackLog : Started retracking : count -> %d", dir_count);
+            if (dir_count > 0)
+            {
+                events    = new HANDLE[dir_count];
+                overlap   = new OVERLAPPED[dir_count];
+                completed = new bool[dir_count];
+
+                for (uint32_t j = 0; j < dir_count; ++j)
+                {
+                    overlap[j]        = {};
+                    events[j]         = CreateEvent(NULL, TRUE, FALSE, NULL);
+                    overlap[j].hEvent = events[j];
+                    completed[j]      = true;
+                }
+                read_buffer = new Buffer[dir_count];
+            }
+            reset_tracking         = false;
+            tracked_directory_size = dir_count;
+        }
+
         uint32_t c = 0;
         for (auto const &[handle, dir_info] : tracked_directory)
         {
@@ -179,8 +205,11 @@ void FileTracker::ListenForChanges(uint32_t timeout)
 
         while (!stop_listening.load(std::memory_order_relaxed))
         {
-            uint32_t j        = 0;
-            bool     relisten = false;
+            uint32_t         j        = 0;
+            bool             relisten = false;
+            std::unique_lock l(tracker_lock);
+            if (reset_tracking.load())
+                break;  
             for (auto const &[handle, handle_info] : tracked_directory)
             {
                 if (GetOverlappedResult(handle, &overlap[j], &bytes_read, FALSE))
@@ -215,7 +244,7 @@ void FileTracker::ListenForChanges(uint32_t timeout)
                             info.file      = file_name;
                             info.directory = handle_info.dir_name;
                             info.result    = TrackFor::WriteChange; // Fixed for now
-                            std::unique_lock l(queue_lock); 
+                            std::unique_lock l(queue_lock);
                             change_info.push(std::move(info));
                         }
                         else
@@ -233,7 +262,7 @@ void FileTracker::ListenForChanges(uint32_t timeout)
                                     info.file      = file_name;
                                     info.directory = handle_info.dir_name;
                                     info.result    = TrackFor::WriteChange; // Fixed for now
-                                    std::unique_lock l(queue_lock); 
+                                    std::unique_lock l(queue_lock);
                                     change_info.push(std::move(info));
                                 }
                                 // else the file isn't tracked

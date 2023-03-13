@@ -2,6 +2,7 @@
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <sys/un.h>
+#include <sys/ioctl.h>
 #include <unistd.h>
 
 #include "./pipe.hpp"
@@ -69,7 +70,7 @@ Handle ConnectAsClient() // could be null for win32
     return in_socket;
 }
 
-uint32_t WriteMessage(Handle fd, uint8_t *msg, uint32_t len) {
+uint32_t WriteMessage(Handle fd, const uint8_t *msg, uint32_t len) {
     int  bytes_written = 0;
     bytes_written = write(fd,(void*)msg,len);
     return (uint32_t)bytes_written;
@@ -88,13 +89,27 @@ uint32_t ReadMessage(Handle fd, uint8_t *msg, uint32_t max_allowed_read)
     return 0;
 }
 
-Handle LaunchAsDaemon()
+Handle LaunchAsDaemon(int argc, char* argv[]) // Parameters ignored
 {
     // Initialize the demon
-    daemon(1,1);
+    // daemon(1,1);
     PipeDesc desc        = {};
     desc.in_buffer_size  = 1024;
     desc.out_buffer_size = 1024;
     desc.mode            = PipeMode::Duplex;
     return InitProcessCommunication(desc);
+}
+
+
+int32_t ReadNonBlocking(Handle handle, uint8_t* buffer, uint32_t max_allowed_read) {
+    int bytes_read = 0;
+    if (ioctl(handle,FIONREAD,&bytes_read) < 0) {
+        perror("ioctl() failed");
+        return -1;
+    }
+
+    if (!bytes_read)
+        return bytes_read;
+
+    return ReadMessage(handle,buffer,max_allowed_read);
 }
