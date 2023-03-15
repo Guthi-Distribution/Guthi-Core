@@ -61,3 +61,4 @@ Platform/
 .clang-format
 guthi_exec
 /src/daemon/win32_pipe.cpp
+src/daemon/linux_runtime

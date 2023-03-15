@@ -6,7 +6,7 @@
 #ifdef _WIN32
 #define GUTHI_PIPE_NAME "\\\\.\\pipe\\GUTHI_PIPE"
 #elif defined(__linux__)
-#define GUTHI_PIPE_NAME "./GUTHI_PIPE"
+#define GUTHI_PIPE_NAME "/home/imsanskar/GUTHI_PIPE"
 #else
 #error "Unsupported Platform"
 #endif 

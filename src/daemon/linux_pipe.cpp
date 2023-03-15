@@ -10,6 +10,9 @@
 #include <cstdlib>
 #include <cstdio>
 #include <cstring>
+#include <unistd.h>
+#include <sys/types.h>
+#include <pwd.h>
 
 // Linux : Use of Domain Socket for IPC
 
@@ -23,12 +26,20 @@ Handle InitProcessCommunication(PipeDesc &desc)
 
     struct sockaddr_un sock_addr = {};
     sock_addr.sun_family = AF_UNIX;
-    strncpy(sock_addr.sun_path,GUTHI_PIPE_NAME,sizeof(sock_addr.sun_path));
+
+    struct passwd *pw = getpwuid(getuid());
+    const char *homedir = pw->pw_dir;
+
+    char *path_to_pipe = new char[strlen(homedir) + 14];
+    memset(path_to_pipe, 0, strlen(homedir) + 14);
+    strcpy(path_to_pipe, homedir);
+    strcat(path_to_pipe, "/GUTHI_PIPE");
+
+    printf("%s\n", path_to_pipe);
+    strncpy(sock_addr.sun_path,path_to_pipe,sizeof(sock_addr.sun_path));
 
     fprintf(stderr, "Full name of domain socket : %s\n",sock_addr.sun_path);
-
-
-
+    unlink(sock_addr.sun_path);
     if (bind(pipe,(const struct sockaddr*)&sock_addr, sizeof(sockaddr_un)) == -1) {
         perror("Failed to bind pipe to the domain socket");
         exit(-3);
